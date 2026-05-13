@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advat Report Database</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-primary: #f8fafc;
@@ -28,7 +31,11 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -62,7 +69,8 @@
         }
 
         .logo-icon {
-            width: 56px; height: 56px;
+            width: 56px;
+            height: 56px;
             background: var(--gradient-1);
             border-radius: 14px;
             display: flex;
@@ -106,17 +114,32 @@
         }
 
         .sync-dot {
-            width: 8px; height: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--accent-success);
             animation: pulse 2s infinite;
         }
-        .sync-dot.loading { background: var(--accent-warning); }
-        .sync-dot.error { background: var(--accent-danger); animation: none; }
+
+        .sync-dot.loading {
+            background: var(--accent-warning);
+        }
+
+        .sync-dot.error {
+            background: var(--accent-danger);
+            animation: none;
+        }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .btn-icon {
@@ -146,6 +169,7 @@
             border: none;
             color: white;
         }
+
         .btn-upload:hover {
             opacity: 0.9;
             color: white;
@@ -177,15 +201,31 @@
         .stat-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0;
-            width: 4px; height: 100%;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
         }
 
-        .stat-card.total::before { background: var(--gradient-1); }
-        .stat-card.runs::before { background: var(--accent-secondary); }
-        .stat-card.tests::before { background: var(--accent-success); }
-        .stat-card.released::before { background: var(--accent-warning); }
-        .stat-card.filtered::before { background: #ec4899; }
+        .stat-card.total::before {
+            background: var(--gradient-1);
+        }
+
+        .stat-card.runs::before {
+            background: var(--accent-secondary);
+        }
+
+        .stat-card.tests::before {
+            background: var(--accent-success);
+        }
+
+        .stat-card.released::before {
+            background: var(--accent-warning);
+        }
+
+        .stat-card.filtered::before {
+            background: #ec4899;
+        }
 
         .stat-label {
             font-size: 11px;
@@ -207,11 +247,25 @@
             margin-top: 4px;
         }
 
-        .stat-card.total .stat-value { color: var(--accent-primary); }
-        .stat-card.runs .stat-value { color: var(--accent-secondary); }
-        .stat-card.tests .stat-value { color: var(--accent-success); }
-        .stat-card.released .stat-value { color: var(--accent-warning); }
-        .stat-card.filtered .stat-value { color: #ec4899; }
+        .stat-card.total .stat-value {
+            color: var(--accent-primary);
+        }
+
+        .stat-card.runs .stat-value {
+            color: var(--accent-secondary);
+        }
+
+        .stat-card.tests .stat-value {
+            color: var(--accent-success);
+        }
+
+        .stat-card.released .stat-value {
+            color: var(--accent-warning);
+        }
+
+        .stat-card.filtered .stat-value {
+            color: #ec4899;
+        }
 
         .sheet-tabs {
             display: flex;
@@ -234,25 +288,35 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .sheet-tab:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-        .sheet-tab.active { background: var(--gradient-1); border-color: transparent; color: white; }
-        
+        .sheet-tab:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .sheet-tab.active {
+            background: var(--gradient-1);
+            border-color: transparent;
+            color: white;
+        }
+
         .sheet-tab.source-header {
             font-weight: 600;
             background: var(--bg-tertiary);
             border-left: 3px solid var(--accent-primary);
         }
+
         .sheet-tab.source-header.active {
             background: var(--accent-primary);
             border-left: 3px solid var(--accent-secondary);
         }
-        
+
         .sheet-tab.sheet-sub {
             font-size: 13px;
             padding: 8px 16px;
             margin-left: 8px;
             border-left: 2px solid var(--border-color);
         }
+
         .sheet-tab.sheet-sub.active {
             background: var(--accent-secondary);
             border-left: 2px solid var(--accent-primary);
@@ -297,7 +361,9 @@
             font-family: 'DM Sans', sans-serif;
         }
 
-        .clear-filters:hover { background: rgba(37, 99, 235, 0.1); }
+        .clear-filters:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
 
         .search-row {
             display: flex;
@@ -331,7 +397,9 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .search-bar input::placeholder { color: var(--text-muted); }
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
 
         .search-bar svg {
             position: absolute;
@@ -374,7 +442,9 @@
             font-size: 14px;
         }
 
-        .active-filter-tag .remove:hover { opacity: 1; }
+        .active-filter-tag .remove:hover {
+            opacity: 1;
+        }
 
         .filters-grid {
             display: grid;
@@ -388,7 +458,7 @@
             gap: 8px;
         }
 
-        .filter-group > label {
+        .filter-group>label {
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -398,13 +468,15 @@
             justify-content: space-between;
         }
 
-        .filter-group > label .count {
+        .filter-group>label .count {
             font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
             color: var(--accent-primary);
         }
 
-        .multi-select { position: relative; }
+        .multi-select {
+            position: relative;
+        }
 
         .multi-select-trigger {
             width: 100%;
@@ -423,8 +495,13 @@
             text-align: left;
         }
 
-        .multi-select-trigger:hover { border-color: var(--accent-primary); }
-        .multi-select-trigger .placeholder { color: var(--text-muted); }
+        .multi-select-trigger:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .multi-select-trigger .placeholder {
+            color: var(--text-muted);
+        }
 
         .multi-select-trigger .selected-count {
             background: var(--accent-primary);
@@ -437,7 +514,9 @@
 
         .multi-select-dropdown {
             position: absolute;
-            top: 100%; left: 0; right: 0;
+            top: 100%;
+            left: 0;
+            right: 0;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -449,7 +528,9 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .multi-select-dropdown.open { display: block; }
+        .multi-select-dropdown.open {
+            display: block;
+        }
 
         .multi-select-search {
             padding: 10px;
@@ -470,9 +551,14 @@
             font-family: 'DM Sans', sans-serif;
         }
 
-        .multi-select-search input:focus { outline: none; border-color: var(--accent-primary); }
+        .multi-select-search input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
 
-        .multi-select-options { padding: 8px; }
+        .multi-select-options {
+            padding: 8px;
+        }
 
         .multi-select-option {
             display: flex;
@@ -485,10 +571,13 @@
             font-size: 13px;
         }
 
-        .multi-select-option:hover { background: var(--bg-tertiary); }
+        .multi-select-option:hover {
+            background: var(--bg-tertiary);
+        }
 
         .multi-select-option input[type="checkbox"] {
-            width: 16px; height: 16px;
+            width: 16px;
+            height: 16px;
             accent-color: var(--accent-primary);
             cursor: pointer;
         }
@@ -534,14 +623,20 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
         }
-        .btn-select-all:hover { background: var(--border-color); }
+
+        .btn-select-all:hover {
+            background: var(--border-color);
+        }
 
         .btn-clear-filter {
             background: transparent;
             border: 1px solid var(--accent-danger);
             color: var(--accent-danger);
         }
-        .btn-clear-filter:hover { background: rgba(220, 38, 38, 0.1); }
+
+        .btn-clear-filter:hover {
+            background: rgba(220, 38, 38, 0.1);
+        }
 
         .table-section {
             background: var(--bg-card);
@@ -579,6 +674,7 @@
             border: none;
             color: white;
         }
+
         .btn-export:hover {
             opacity: 0.9;
             color: white;
@@ -623,21 +719,31 @@
             transition: color 0.2s;
         }
 
-        thead th:hover { color: var(--accent-primary); }
-        thead th.sorted { color: var(--accent-primary); }
+        thead th:hover {
+            color: var(--accent-primary);
+        }
+
+        thead th.sorted {
+            color: var(--accent-primary);
+        }
 
         .sort-icon {
             margin-left: 4px;
             opacity: 0.5;
         }
-        thead th.sorted .sort-icon { opacity: 1; }
+
+        thead th.sorted .sort-icon {
+            opacity: 1;
+        }
 
         tbody tr {
             border-bottom: 1px solid var(--border-color);
             transition: background 0.15s;
         }
 
-        tbody tr:hover { background: var(--bg-tertiary); }
+        tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
 
         tbody td {
             padding: 14px 16px;
@@ -711,7 +817,8 @@
             white-space: nowrap;
         }
 
-        .btn-view, .btn-download {
+        .btn-view,
+        .btn-download {
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -730,14 +837,18 @@
             background: var(--accent-primary);
             color: white;
         }
-        .btn-view:hover { opacity: 0.9; }
+
+        .btn-view:hover {
+            opacity: 0.9;
+        }
 
         .btn-download {
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
         }
-        .btn-download:hover { 
+
+        .btn-download:hover {
             background: var(--border-color);
             color: var(--text-primary);
         }
@@ -771,19 +882,26 @@
         }
 
         .spinner {
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
             border: 3px solid var(--border-color);
             border-top-color: var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             display: flex;
@@ -795,7 +913,10 @@
             transition: all 0.3s;
         }
 
-        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
         .modal-content {
             background: var(--bg-secondary);
@@ -810,7 +931,9 @@
             transition: transform 0.3s;
         }
 
-        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
 
         .modal-header {
             padding: 20px 24px;
@@ -836,7 +959,9 @@
             transition: color 0.2s;
         }
 
-        .modal-close:hover { color: var(--text-primary); }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
 
         .modal-body {
             flex: 1;
@@ -901,7 +1026,8 @@
             margin-top: 24px;
         }
 
-        .btn-primary, .btn-secondary {
+        .btn-primary,
+        .btn-secondary {
             flex: 1;
             padding: 12px 20px;
             border-radius: 8px;
@@ -917,14 +1043,20 @@
             border: none;
             color: white;
         }
-        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
 
         .btn-secondary {
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
         }
-        .btn-secondary:hover { background: var(--border-color); }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
 
         /* API List Styles */
         .api-list {
@@ -944,8 +1076,13 @@
             transition: background 0.15s;
         }
 
-        .api-item:last-child { border-bottom: none; }
-        .api-item:hover { background: var(--bg-tertiary); }
+        .api-item:last-child {
+            border-bottom: none;
+        }
+
+        .api-item:hover {
+            background: var(--bg-tertiary);
+        }
 
         .api-item input[type="checkbox"] {
             width: 18px;
@@ -1025,7 +1162,9 @@
             transition: opacity 0.2s;
         }
 
-        .btn-add-api:hover { opacity: 0.9; }
+        .btn-add-api:hover {
+            opacity: 0.9;
+        }
 
         .api-empty {
             padding: 30px 20px;
@@ -1063,7 +1202,8 @@
             margin-bottom: 20px;
         }
 
-        .upload-zone:hover, .upload-zone.dragover {
+        .upload-zone:hover,
+        .upload-zone.dragover {
             border-color: var(--accent-primary);
             background: rgba(37, 99, 235, 0.05);
         }
@@ -1157,8 +1297,13 @@
             transition: background 0.15s;
         }
 
-        .sheet-item:last-child { border-bottom: none; }
-        .sheet-item:hover { background: var(--bg-tertiary); }
+        .sheet-item:last-child {
+            border-bottom: none;
+        }
+
+        .sheet-item:hover {
+            background: var(--bg-tertiary);
+        }
 
         .sheet-item input[type="checkbox"] {
             accent-color: var(--accent-primary);
@@ -1189,20 +1334,52 @@
         }
 
         @media (max-width: 768px) {
-            .container { padding: 16px; }
-            .header { flex-direction: column; align-items: flex-start; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .filters-grid { grid-template-columns: 1fr; }
-            .table-wrapper { max-height: 50vh; }
-            .search-bar { min-width: 100%; }
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrapper {
+                max-height: 50vh;
+            }
+
+            .search-bar {
+                min-width: 100%;
+            }
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -1220,19 +1397,22 @@
                 </div>
                 <button class="btn-icon btn-upload" onclick="openUpload()" title="Upload Local File">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                     </svg>
                     Upload
                 </button>
                 <button class="btn-icon" onclick="loadData()" title="Refresh">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                        <path
+                            d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
                     </svg>
                     Refresh
                 </button>
                 <button class="btn-icon" onclick="openConfig()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
                     </svg>
                     Settings
                 </button>
@@ -1273,17 +1453,18 @@
             <div class="filters-header">
                 <div class="filters-title">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                     </svg>
                     Advanced Filters
                 </div>
                 <button class="clear-filters" onclick="clearAllFilters()">Clear All Filters</button>
             </div>
-            
+
             <div class="search-row">
                 <div class="search-bar">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
                     </svg>
                     <input type="text" id="searchInput" placeholder="Search sample name, ID, category, remarks...">
                 </div>
@@ -1298,8 +1479,9 @@
                 <div class="table-title">Sample Records</div>
                 <div class="table-actions">
                     <button class="btn-icon btn-export" onclick="exportData()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
                         Export CSV
                     </button>
@@ -1310,14 +1492,18 @@
             </div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="tableHead"></tr></thead>
+                    <thead>
+                        <tr id="tableHead"></tr>
+                    </thead>
                     <tbody id="tableBody">
-                        <tr><td colspan="11">
-                            <div class="loading-state">
-                                <div class="spinner"></div>
-                                <span>Loading data...</span>
-                            </div>
-                        </td></tr>
+                        <tr>
+                            <td colspan="11">
+                                <div class="loading-state">
+                                    <div class="spinner"></div>
+                                    <span>Loading data...</span>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1338,11 +1524,16 @@
 
     <div class="modal-overlay" id="configModal">
         <div class="modal-content config-content" style="max-width: 650px;">
-            <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Data Sources Configuration</h2>
+            <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="vertical-align: middle; margin-right: 8px;">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>Data Sources Configuration</h2>
             <p class="subtitle">Manage multiple Google Apps Script Web App URLs below.</p>
-            
+
             <div class="api-list" id="apiList"></div>
-            
+
             <div class="add-api-section">
                 <div class="config-field" style="margin-bottom: 12px;">
                     <label>Source Name</label>
@@ -1353,7 +1544,10 @@
                     <input type="text" id="newApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
                 </div>
                 <button class="btn-add-api" onclick="addApiUrl()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
                     Add Data Source
                 </button>
             </div>
@@ -1367,23 +1561,32 @@
 
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-content upload-content">
-            <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Upload Local File</h2>
+            <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>Upload Local File</h2>
             <p class="subtitle">Upload a TSV, CSV, or Excel file to view data locally.</p>
-            
+
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                 </svg>
                 <p>Click to upload or drag and drop</p>
                 <p class="formats">TSV, CSV, XLSX, XLS</p>
             </div>
-            <input type="file" id="fileInput" accept=".tsv,.csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event)">
-            
+            <input type="file" id="fileInput" accept=".tsv,.csv,.xlsx,.xls" style="display:none"
+                onchange="handleFileSelect(event)">
+
             <div id="uploadedFileInfo" style="display:none">
                 <div class="uploaded-file">
                     <div class="file-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
                         </svg>
                     </div>
                     <div class="file-info">
@@ -1456,15 +1659,15 @@
 
         const savedConfig = localStorage.getItem('advatConfigV2');
         if (savedConfig) {
-            try { 
+            try {
                 const parsed = JSON.parse(savedConfig);
                 // Migrate old format to new format
                 if (parsed.apiUrl && !parsed.apiUrls) {
                     parsed.apiUrls = [{ name: 'Default Source', url: parsed.apiUrl, enabled: true }];
                     delete parsed.apiUrl;
                 }
-                config = { ...config, ...parsed }; 
-            } catch(e) {}
+                config = { ...config, ...parsed };
+            } catch (e) { }
         }
 
         // INIT
@@ -1484,7 +1687,7 @@
             syncText.textContent = 'Loading...';
 
             const enabledUrls = config.apiUrls.filter(api => api.enabled);
-            
+
             if (enabledUrls.length === 0) {
                 showError('No API URLs configured. Click Settings.');
                 return;
@@ -1500,11 +1703,11 @@
                         syncText.textContent = `Loading ${api.name}...`;
                         const response = await fetch(api.url);
                         const json = await response.json();
-                        
+
                         if (json.success) {
                             // Merge sheets
                             Object.assign(allSheets, json.sheets || {});
-                            
+
                             // Add source info to data
                             const sourceData = (json.data || []).map(row => ({
                                 ...row,
@@ -1540,10 +1743,10 @@
                 sample_name: row.sample_name || row['sample_name'] || '',
                 gen_id: row.gen_id || row['gen_id'] || '',
                 anderson_id: row.anderson_id || row['anderson_id'] || '',
-                test: row.test || '',
+                test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
                 single_couple: row['single/couple'] || row.single_couple || row.singlecouple || '',
                 category: row.category || '',
-                sample_type: row.sample_type || row['sample_type'] || '',
+                sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
                 remarks: row.remarks || '',
                 report_link: row._report_link || row.report_link || '',
                 run: row._run || row.run || '',
@@ -1565,10 +1768,209 @@
             document.getElementById('tableBody').innerHTML = `<tr><td colspan="11"><div class="empty-state"><h3>${msg}</h3></div></td></tr>`;
         }
 
+        function normalizeSampleType(value) {
+            if (!value && value !== 0) return '';
+            const raw = String(value).trim();
+            if (!raw) return '';
+
+            let normalized = raw.toLowerCase()
+                .replace(/[-_]/g, ' ')
+                .replace(/[^a-z0-9 ]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const mapping = {
+                'blood': 'Blood',
+                'blod': 'Blood',
+                'blodd': 'Blood',
+                'whole blood': 'Whole Blood',
+                'serum': 'Serum',
+                'plasma': 'Plasma',
+                'saliva': 'Saliva',
+                'buccal': 'Buccal',
+                'buccal swab': 'Buccal Swab',
+                'swab': 'Swab',
+                'urine': 'Urine',
+                'dna': 'DNA',
+                'rna': 'RNA',
+                'tissue': 'Tissue',
+                'cell culture': 'Cell Culture',
+                'csf': 'CSF',
+                'cerebrospinal fluid': 'Cerebrospinal Fluid',
+                'nasal swab': 'Nasal Swab',
+                'throat swab': 'Throat Swab',
+                'sputum': 'Sputum',
+                'plasma sample': 'Plasma',
+                'blood sample': 'Blood',
+                'blood plasma': 'Plasma',
+                'blood serum': 'Serum',
+                'blood product': 'Blood Product',
+                'bloodamnioticfluid': 'Blood Amniotic Fluid',
+                'amniotic fluid': 'Amniotic Fluid',
+                'blood amniotic fluid': 'Blood Amniotic Fluid'
+            };
+
+            if (mapping[normalized]) return mapping[normalized];
+
+            const canonical = [
+                'Blood', 'Whole Blood', 'Serum', 'Plasma', 'Saliva', 'Buccal', 'Buccal Swab',
+                'Swab', 'Urine', 'DNA', 'RNA', 'Tissue', 'Cell Culture', 'CSF',
+                'Cerebrospinal Fluid', 'Nasal Swab', 'Throat Swab', 'Sputum',
+                'Amniotic Fluid', 'Blood Product', 'Blood Amniotic Fluid'
+            ];
+
+            const normalizedCompact = normalized.replace(/\s+/g, '');
+            for (const candidate of canonical) {
+                const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
+                if (normalizedCompact === candidateCompact || normalizedCompact.includes(candidateCompact) || candidateCompact.includes(normalizedCompact)) {
+                    return candidate;
+                }
+            }
+
+            let bestMatch = { distance: Infinity, label: '' };
+            for (const candidate of canonical) {
+                const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
+                const distance = getEditDistance(normalizedCompact, candidateCompact);
+                if (distance < bestMatch.distance) {
+                    bestMatch = { distance, label: candidate };
+                }
+            }
+
+            if (bestMatch.distance <= 2 || bestMatch.distance <= Math.floor(normalizedCompact.length / 4)) {
+                return bestMatch.label;
+            }
+
+            return normalized.split(' ').map(word => {
+                if (word === 'dna' || word === 'rna' || word === 'csf') return word.toUpperCase();
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
+
+        function normalizeTestName(value) {
+            if (!value && value !== 0) return '';
+            const raw = String(value).trim();
+            if (!raw) return '';
+
+            let normalized = raw.toLowerCase()
+                .replace(/[-_]/g, ' ')
+                .replace(/[^a-z0-9 ]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const mapping = {
+                'pcr': 'PCR',
+                'rt pcr': 'RT-PCR',
+                'rtpcr': 'RT-PCR',
+                'rt-pcr': 'RT-PCR',
+                'covid pcr': 'COVID PCR',
+                'covid19 pcr': 'COVID PCR',
+                'covid-19 pcr': 'COVID PCR',
+                'covid': 'COVID',
+                'ngs': 'NGS',
+                'wgs': 'WGS',
+                'exome': 'Exome',
+                'ngs panel': 'NGS Panel',
+                'genotyping': 'Genotyping',
+                'antibody': 'Antibody',
+                'serology': 'Serology',
+                'panel': 'Panel',
+                'panel test': 'Panel Test',
+                'whole genome seq': 'Whole Genome Sequencing',
+                'whole genome sequencing': 'Whole Genome Sequencing',
+                'gene panel': 'Gene Panel',
+                'pre pgt': 'Pre PGT',
+                'prepgt': 'Pre PGT',
+                'pre pgt work': 'Pre PGT Workup',
+                'pre pgt work up': 'Pre PGT Workup',
+                'pre pgt workup': 'Pre PGT Workup',
+                'pre pgt work-up': 'Pre PGT Workup',
+                'prepgt work': 'Pre PGT Workup',
+                'prepgt workup': 'Pre PGT Workup',
+                'prepgt work-up': 'Pre PGT Workup',
+                'pre pgt pkd1': 'Pre PGT PKD1',
+                'prepgt pkd1': 'Pre PGT PKD1',
+                'point mutation': 'Point Mutation',
+                'point mutations': 'Point Mutation',
+                'point mut': 'Point Mutation'
+            };
+
+            if (!mapping[normalized]) {
+                if (normalized.includes('pre pgt') && normalized.includes('work')) {
+                    return 'Pre PGT Workup';
+                }
+                if (normalized.includes('pre pgt') && normalized.includes('pkd1')) {
+                    return 'Pre PGT PKD1';
+                }
+            }
+
+            if (mapping[normalized]) return mapping[normalized];
+
+            const canonical = [
+                'PCR', 'RT-PCR', 'COVID PCR', 'COVID', 'NGS', 'WGS', 'Exome', 'NGS Panel',
+                'Genotyping', 'Antibody', 'Serology', 'Panel Test', 'Whole Genome Sequencing', 'Gene Panel'
+            ];
+
+            const normalizedCompact = normalized.replace(/\s+/g, '');
+            for (const candidate of canonical) {
+                const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
+                if (normalizedCompact === candidateCompact || normalizedCompact.includes(candidateCompact) || candidateCompact.includes(normalizedCompact)) {
+                    return candidate;
+                }
+            }
+
+            let bestMatch = { distance: Infinity, label: '' };
+            for (const candidate of canonical) {
+                const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
+                const distance = getEditDistance(normalizedCompact, candidateCompact);
+                if (distance < bestMatch.distance) {
+                    bestMatch = { distance, label: candidate };
+                }
+            }
+
+            if (bestMatch.distance <= 2 || bestMatch.distance <= Math.floor(normalizedCompact.length / 4)) {
+                return bestMatch.label;
+            }
+
+            return normalized.split(' ').map(word => {
+                if (['dna', 'rna', 'csf', 'pcr', 'ngs', 'wgs', 'rt', 'covid'].includes(word)) return word.toUpperCase();
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
+
+        function getTestFilterGroupLabel(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            const normalized = raw.toLowerCase()
+                .replace(/[-_]/g, ' ')
+                .replace(/[^a-z0-9 ]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (normalized.includes('pre pgt')) return 'Pre PGT';
+            if (normalized.includes('point mut')) return 'Point Mutation';
+            return raw;
+        }
+
+        function getEditDistance(a, b) {
+            const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+            for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+            for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j] + 1,
+                        dp[i][j - 1] + 1,
+                        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                    );
+                }
+            }
+            return dp[a.length][b.length];
+        }
+
         // SHEET TABS
         function renderSheetTabs() {
             const container = document.getElementById('sheetTabs');
-            
+
             // Get unique source-sheet combinations
             const sourceSheets = {};
             allData.forEach(d => {
@@ -1588,14 +1990,14 @@
                 }
             }
 
-            if (tabs.length <= 1) { 
-                container.innerHTML = ''; 
-                return; 
+            if (tabs.length <= 1) {
+                container.innerHTML = '';
+                return;
             }
 
             // Add "All" tab first
             let html = `<button class="sheet-tab ${config.currentSheet === 'all' ? 'active' : ''}" onclick="switchSheet('all')">All Sheets</button>`;
-            
+
             // Group by source if multiple sources
             if (Object.keys(sourceSheets).length > 1) {
                 for (const [source, sheets] of Object.entries(sourceSheets)) {
@@ -1627,9 +2029,13 @@
         // FILTERS
         function renderFilters() {
             document.getElementById('filtersGrid').innerHTML = FILTER_COLUMNS.map(col => {
-                const values = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
+                const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
                 const counts = {};
-                values.forEach(v => counts[v] = allData.filter(d => d[col.key] === v).length);
+                const values = [...new Set(rawValues.map(v => col.key === 'test' ? getTestFilterGroupLabel(v) : v))].sort();
+
+                values.forEach(v => {
+                    counts[v] = allData.filter(d => (col.key === 'test' ? getTestFilterGroupLabel(d[col.key]) : d[col.key]) === v).length;
+                });
 
                 return `
                     <div class="filter-group">
@@ -1751,10 +2157,17 @@
                         if (row.sheet !== config.currentSheet) return false;
                     }
                 }
-                
+
                 if (search && !Object.values(row).join(' ').toLowerCase().includes(search)) return false;
                 for (const col of FILTER_COLUMNS) {
-                    if (filters[col.key].size > 0 && !filters[col.key].has(row[col.key])) return false;
+                    if (filters[col.key].size > 0) {
+                        if (col.key === 'test') {
+                            const testLabel = getTestFilterGroupLabel(row.test);
+                            if (!filters.test.has(testLabel)) return false;
+                        } else if (!filters[col.key].has(row[col.key])) {
+                            return false;
+                        }
+                    }
                 }
                 return true;
             });
@@ -1775,7 +2188,7 @@
 
         function updateStats() {
             const isFiltered = filteredData.length !== allData.length;
-            
+
             const filteredRuns = [...new Set(filteredData.map(d => d.run).filter(Boolean))].length;
             const filteredTests = [...new Set(filteredData.map(d => d.test).filter(Boolean))].length;
             const filteredReports = filteredData.filter(d => d.report_link).length;
@@ -1803,10 +2216,10 @@
         function sortBy(col) {
             if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
             else { sortColumn = col; sortDirection = 'asc'; }
-            document.querySelectorAll('thead th').forEach(th => { 
-                th.classList.remove('sorted'); 
-                const i = th.querySelector('.sort-icon'); 
-                if(i) i.textContent = '↕'; 
+            document.querySelectorAll('thead th').forEach(th => {
+                th.classList.remove('sorted');
+                const i = th.querySelector('.sort-icon');
+                if (i) i.textContent = '↕';
             });
             const th = document.querySelector(`thead th[data-col="${col}"]`);
             if (th) { th.classList.add('sorted'); th.querySelector('.sort-icon').textContent = sortDirection === 'asc' ? '↑' : '↓'; }
@@ -1815,7 +2228,7 @@
 
         // TABLE
         function renderTableHead() {
-            document.getElementById('tableHead').innerHTML = TABLE_COLUMNS.map(c => 
+            document.getElementById('tableHead').innerHTML = TABLE_COLUMNS.map(c =>
                 `<th data-col="${c.key}" ${c.sortable ? `onclick="sortBy('${c.key}')"` : ''}>${c.label}${c.sortable ? ' <span class="sort-icon">↕</span>' : ''}</th>`
             ).join('');
         }
@@ -1885,10 +2298,10 @@
 
         // EXPORT
         function exportData() {
-            const headers = ['No','Sample Name','Gen ID','Anderson ID','Test','Single/Couple','Category','Sample Type','Remarks','Run','Report Link'];
+            const headers = ['No', 'Sample Name', 'Gen ID', 'Anderson ID', 'Test', 'Single/Couple', 'Category', 'Sample Type', 'Remarks', 'Run', 'Report Link'];
             const rows = filteredData.map(r => [r.no, r.sample_name, r.gen_id, r.anderson_id, r.test, r.single_couple, r.category, r.sample_type, r.remarks, r.run, r.report_link]);
-            const csv = [headers, ...rows].map(r => r.map(c => `"${(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-            const blob = new Blob([csv], {type: 'text/csv'});
+            const csv = [headers, ...rows].map(r => r.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `advat_export_${new Date().toISOString().split('T')[0]}.csv`;
@@ -1901,7 +2314,7 @@
             document.getElementById('configModal').classList.add('active');
         }
 
-        function closeConfig() { 
+        function closeConfig() {
             document.getElementById('configModal').classList.remove('active');
             document.getElementById('newApiName').value = '';
             document.getElementById('newApiUrl').value = '';
@@ -1939,17 +2352,17 @@
         function addApiUrl() {
             const name = document.getElementById('newApiName').value.trim();
             const url = document.getElementById('newApiUrl').value.trim();
-            
+
             if (!name || !url) {
                 alert('Please enter both name and URL');
                 return;
             }
-            
+
             if (!url.startsWith('https://script.google.com/')) {
                 alert('Please enter a valid Google Apps Script URL');
                 return;
             }
-            
+
             config.apiUrls.push({ name, url, enabled: true });
             document.getElementById('newApiName').value = '';
             document.getElementById('newApiUrl').value = '';
@@ -1960,10 +2373,10 @@
             const api = config.apiUrls[index];
             const newName = prompt('Edit source name:', api.name);
             if (newName === null) return;
-            
+
             const newUrl = prompt('Edit URL:', api.url);
             if (newUrl === null) return;
-            
+
             if (newName.trim() && newUrl.trim()) {
                 config.apiUrls[index].name = newName.trim();
                 config.apiUrls[index].url = newUrl.trim();
@@ -2109,7 +2522,7 @@
 
                 for (const row of rows) {
                     const firstCell = String(row[0] || '').trim();
-                    
+
                     // Detect RUN marker
                     if (firstCell.match(/^(RUN|SURFseq)/i)) {
                         currentRun = firstCell;
@@ -2132,10 +2545,10 @@
                         sample_name: row[1] || '',
                         gen_id: row[2] || '',
                         anderson_id: row[3] || '',
-                        test: row[4] || '',
+                        test: normalizeTestName(row[4] || ''),
                         single_couple: row[5] || '',
                         category: row[6] || '',
-                        sample_type: row[8] || '',
+                        sample_type: normalizeSampleType(row[8] || ''),
                         remarks: row[9] || row[10] || '',
                         report_link: '',
                         run: currentRun,
@@ -2162,7 +2575,7 @@
 
             for (const row of rows) {
                 const firstCell = String(row[0] || '').trim();
-                
+
                 if (firstCell.match(/^(RUN|SURFseq)/i)) {
                     currentRun = firstCell;
                     continue;
@@ -2181,10 +2594,10 @@
                     sample_name: row[1] || '',
                     gen_id: row[2] || '',
                     anderson_id: row[3] || '',
-                    test: row[4] || '',
+                    test: normalizeTestName(row[4] || ''),
                     single_couple: row[5] || '',
                     category: row[6] || '',
-                    sample_type: row[8] || '',
+                    sample_type: normalizeSampleType(row[8] || ''),
                     remarks: row[9] || row[10] || '',
                     report_link: '',
                     run: currentRun,
@@ -2221,7 +2634,7 @@
         }
 
         // UTILS
-        function esc(s) { return s ? String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) : ''; }
+        function esc(s) { return s ? String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])) : ''; }
 
         function showTip(e, txt) {
             if (!txt || txt === '-') return;
@@ -2236,10 +2649,10 @@
 
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
-            document.addEventListener('click', e => { 
-                if (!e.target.closest('.multi-select')) document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open')); 
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.multi-select')) document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open'));
             });
-            document.addEventListener('keydown', e => { 
+            document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') { closeModal(); closeConfig(); closeUpload(); document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open')); }
             });
             document.getElementById('pdfModal').addEventListener('click', e => { if (e.target.id === 'pdfModal') closeModal(); });
@@ -2250,4 +2663,5 @@
         function debounce(fn, wait) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
     </script>
 </body>
+
 </html>
