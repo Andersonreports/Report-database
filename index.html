@@ -1934,6 +1934,12 @@
                 .trim();
 
             const mapping = {
+                // Explicit exact entries for short acronyms that are only one
+                // edit apart from another canonical term below (WES/WGS,
+                // CES/NGS) - without these, the edit-distance fallback further
+                // down was silently relabeling them as the wrong test type.
+                'wes': 'WES',
+                'ces': 'CES',
                 'pcr': 'PCR',
                 'rt pcr': 'RT-PCR',
                 'rtpcr': 'RT-PCR',
@@ -1980,6 +1986,19 @@
                     return 'Pre PGT PKD1';
                 }
             }
+
+            // "WES + WMGS" combo test appears as "Wes Wmgs", "Wmgs Wes" (word
+            // order swapped), "Wesa Wmgs" (typo), and spelled out as
+            // "Wes Mitochondrial Genome Sequencing" (WMGS expanded) - collapse
+            // all of those onto one canonical label regardless of word order.
+            // Exact token match only ("wes" or the observed "wesa" typo) -
+            // NOT a generic edit-distance check, since "CES + WMGS" is a
+            // real, separate, heavily-used test and "ces" is one edit from
+            // "wes" too. A loose fuzzy match here would wrongly merge them.
+            const words = normalized.split(' ');
+            const hasWes = words.some(w => w === 'wes' || w === 'wesa');
+            const hasWmgs = normalized.includes('wmgs') || (normalized.includes('mitochondrial') && normalized.includes('genome'));
+            if (hasWes && hasWmgs) return 'WES + WMGS';
 
             if (mapping[normalized]) return mapping[normalized];
 
@@ -2142,7 +2161,13 @@
         function getSingleCoupleTrioFilterGroupLabel(value) {
             const raw = String(value || '').trim();
             if (!raw) return '';
-            return raw.split(' - ')[0].trim();
+            const base = raw.split(' - ')[0].trim();
+            // Only these three are real classifications for this filter - stray
+            // data (a category value that landed in this column on a
+            // misaligned row, e.g. "Fertility", "Muscular Dystrophy.") isn't a
+            // Single/Couple/Trio value and shouldn't appear as an option here.
+            if (base === 'Single' || base === 'Couple' || base === 'Trio') return base;
+            return '';
         }
 
         function getFilterGroupLabel(key, value) {
@@ -2166,7 +2191,7 @@
                     });
                 } else {
                     const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
-                    values = [...new Set(rawValues.map(v => getFilterGroupLabel(col.key, v)))].sort();
+                    values = [...new Set(rawValues.map(v => getFilterGroupLabel(col.key, v)).filter(Boolean))].sort();
                     values.forEach(v => {
                         counts[v] = allData.filter(d => getFilterGroupLabel(col.key, d[col.key]) === v).length;
                     });
