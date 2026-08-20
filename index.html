@@ -1627,6 +1627,7 @@
             { key: 'test', label: 'Test' },
             { key: 'single_couple', label: 'Single/Couple' },
             { key: 'category', label: 'Category' },
+            { key: 'panel', label: 'Panel' },
             { key: 'sample_type', label: 'Sample Type' },
             { key: 'status', label: 'Status' },
             { key: 'snv_status', label: 'SNV Status' },
@@ -1660,8 +1661,8 @@
 
         const COLUMN_LABEL_OVERRIDES = {
             no: 'No', sample_name: 'Sample Name', gen_id: 'Gen ID', anderson_id: 'Anderson ID',
-            test: 'Test', single_couple: 'Single/Couple', category: 'Category', sample_type: 'Sample Type',
-            remarks: 'Remarks', status: 'Status', snv_status: 'SNV Status',
+            test: 'Test', single_couple: 'Single/Couple', category: 'Category', panel: 'Panel',
+            sample_type: 'Sample Type', remarks: 'Remarks', status: 'Status', snv_status: 'SNV Status',
             report_release_date: 'Report Release Date', run: 'Run'
         };
 
@@ -1703,6 +1704,14 @@
             // (the report View/PDF buttons) aren't literal sheet columns, so
             // they always go last rather than wherever they'd fall naturally.
             const realColumnKeys = orderedKeys.filter(k => !NON_COLUMN_KEYS.has(k) && k !== 'run');
+
+            // 'panel' is derived from Category, not a literal sheet column, so
+            // it never appears via the raw-key scan above - insert it right
+            // after Category (or at the end if Category itself is absent).
+            const categoryIdx = realColumnKeys.indexOf('category');
+            if (categoryIdx > -1) realColumnKeys.splice(categoryIdx + 1, 0, 'panel');
+            else realColumnKeys.push('panel');
+
             TABLE_COLUMNS = [...realColumnKeys, 'run'].map(key => ({
                 key,
                 label: COLUMN_LABEL_OVERRIDES[key] || prettifyColumnKey(key),
@@ -1817,6 +1826,7 @@
             sheetNames = Object.keys(json.sheets || {});
 
             allData = (json.data || []).map(row => {
+                const category = normalizeCategory(row.category || '');
                 const record = {
                     no: row.no || row['no.'] || '',
                     sample_name: row.sample_name || row['sample_name'] || '',
@@ -1824,7 +1834,8 @@
                     anderson_id: row.anderson_id || row['anderson_id'] || '',
                     test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
                     single_couple: normalizeSingleCoupleTrio(row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || ''),
-                    category: normalizeCategory(row.category || ''),
+                    category: category,
+                    panel: classifyPanel(category),
                     sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
                     remarks: row.remarks || '',
                     status: row.status || '',
@@ -2020,6 +2031,42 @@
                 }
                 return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
             }).join(' ');
+        }
+
+        // Maps a normalized Category value onto one of the diagnostic panels
+        // from the Germline-Panel taxonomy, by keyword. Checked in this order
+        // so a more specific panel wins before a broad, common term (e.g.
+        // "neuro") gets a chance to match something it shouldn't. Renal and
+        // Nephrology are merged into one bucket - the category text alone
+        // usually can't reliably distinguish "renal/urinary structural" from
+        // "chronic kidney disease" cases. Anything matching no keyword is
+        // "Unclassified" rather than guessed.
+        const PANEL_KEYWORDS = [
+            { panel: 'Fertility', keywords: ['fertility', 'miscarriage', 'infertil', 'pregnancy loss', 'product of conception', 'poc'] },
+            { panel: 'Cancer', keywords: ['cancer', 'oncolog', 'tumour', 'tumor', 'carcinoma', 'malignan', 'lymphoma', 'leukemia', 'leukaemia'] },
+            { panel: 'Diabetes', keywords: ['diabet', 'mody', 't1dm', 't2dm'] },
+            { panel: 'Endocrine', keywords: ['endocrine', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon'] },
+            { panel: 'Metabolic', keywords: ['metabolic', 'metabolism'] },
+            { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo'] },
+            { panel: 'Immune', keywords: ['immun', 'lymphadenopathy'] },
+            { panel: 'Ehlers-Danlos', keywords: ['ehlers', 'eds'] },
+            { panel: 'Skeletal', keywords: ['skeletal', 'dysplasia', 'osteo'] },
+            { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis'] },
+            { panel: 'Eye', keywords: ['ophthalm', 'retina', 'cataract', 'eye'] },
+            { panel: 'Ear', keywords: ['audit', 'hearing', 'deaf', 'ear'] },
+            { panel: 'Renal / Nephrology', keywords: ['renal', 'kidney', 'cakut', 'pkd', 'urinary', 'nephro'] },
+            { panel: 'Heart', keywords: ['cardiac', 'cardio', 'heart', 'hypertens', 'arrhythmia'] },
+            { panel: 'Muscular', keywords: ['muscular dystrophy', 'muscul', 'myopath'] },
+            { panel: 'Neuro', keywords: ['neuro', 'seizure', 'epilep', 'cerebral', 'developmental delay', 'ataxia', 'dystonia', 'leukodystrophy', 'encephal', 'intellectual disab'] }
+        ];
+
+        function classifyPanel(category) {
+            if (!category) return '';
+            const lower = String(category).toLowerCase();
+            for (const { panel, keywords } of PANEL_KEYWORDS) {
+                if (keywords.some(kw => lower.includes(kw))) return panel;
+            }
+            return 'Unclassified';
         }
 
         function normalizeTestName(value) {
@@ -2290,7 +2337,7 @@
         // always-visible search bar and the always-visible Data Source row)
         // whenever Classified Reports is the only selected data source.
         // BIOINFO REPORTS 2025 (or "All Sources") keeps every filter, unaffected.
-        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'single_couple', 'snv_status', 'sheet']);
+        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'panel', 'single_couple', 'snv_status', 'sheet']);
 
         // Match case-insensitively and by substring - the configured source
         // name is whatever was typed into Settings ("Classified Reports",
