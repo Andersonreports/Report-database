@@ -1635,7 +1635,12 @@
             { key: 'source', label: 'Data Source' }
         ];
 
-        const TABLE_COLUMNS = [
+        // Columns every source has, in a sensible fixed order. Any OTHER field
+        // actually present in the sheet (SNV/CNV sub-columns, raw data
+        // location, project file, etc.) gets appended dynamically once data
+        // loads, by rebuildTableColumns() - so the table always reflects every
+        // column really in the sheet instead of a hardcoded subset.
+        const FIXED_TABLE_COLUMNS = [
             { key: 'no', label: 'No', sortable: true },
             { key: 'sample_name', label: 'Sample Name', sortable: true },
             { key: 'gen_id', label: 'Gen ID', sortable: true },
@@ -1645,9 +1650,40 @@
             { key: 'category', label: 'Category', sortable: true },
             { key: 'sample_type', label: 'Sample Type', sortable: true },
             { key: 'remarks', label: 'Remarks', sortable: false },
-            { key: 'run', label: 'Run', sortable: true },
-            { key: 'actions', label: 'Actions', sortable: false }
+            { key: 'status', label: 'Status', sortable: true },
+            { key: 'snv_status', label: 'SNV Status', sortable: true },
+            { key: 'report_release_date', label: 'Report Release Date', sortable: true },
+            { key: 'run', label: 'Run', sortable: true }
         ];
+
+        // Fields that exist on every row for internal bookkeeping/filtering
+        // (not a real sheet column) - never turned into their own dynamic
+        // table column even though they're keys on the record.
+        const NON_COLUMN_KEYS = new Set([
+            ...FIXED_TABLE_COLUMNS.map(c => c.key),
+            'report_link', 'sheet', 'source', 'report_status'
+        ]);
+
+        let TABLE_COLUMNS = [...FIXED_TABLE_COLUMNS, { key: 'actions', label: 'Actions', sortable: false }];
+
+        function prettifyColumnKey(key) {
+            const UPPERCASE_WORDS = new Set(['vus', 'snv', 'cnv', 'poc', 'af']);
+            return key.split('_').map(w => (UPPERCASE_WORDS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+        }
+
+        // Rebuild TABLE_COLUMNS from whatever fields are actually present in
+        // allData once it's loaded, so a source-specific column (e.g.
+        // snv_pathogenic, cnv_recommendation, raw_data_location) shows up
+        // without needing to be hardcoded here.
+        function rebuildTableColumns() {
+            const dynamicKeys = new Set();
+            allData.forEach(r => Object.keys(r).forEach(k => {
+                if (!NON_COLUMN_KEYS.has(k)) dynamicKeys.add(k);
+            }));
+            const dynamicColumns = [...dynamicKeys].sort().map(k => ({ key: k, label: prettifyColumnKey(k), sortable: true }));
+            TABLE_COLUMNS = [...FIXED_TABLE_COLUMNS, ...dynamicColumns, { key: 'actions', label: 'Actions', sortable: false }];
+            renderTableHead();
+        }
 
         // STATE
         let allData = [];
@@ -1736,31 +1772,58 @@
             }
         }
 
+        // Raw backend keys already folded into one of the named fields above
+        // (either the canonical name itself, or a legacy alias the backend
+        // sets alongside it) - excluded when copying "extra" fields verbatim
+        // so they don't show up a second time as their own column.
+        const HANDLED_RAW_KEYS = new Set([
+            '_run', '_sheet', '_report_link', '_source',
+            'no', 'no.', 'sample_name', 'gen_id', 'anderson_id', 'test',
+            'single_couple_trio', 'single_coupletrio', 'single/couple', 'single_couple', 'singlecouple',
+            'category', 'sample_type', 'remarks', 'status', 'snv_status', 'report_release_date',
+            'report_link', 'run', 'sheet', 'source',
+            'samplename', 'genid', 'andersonid', 'sampletype',
+            'reportreleasedate', 'releasedate', 'rawdata', 'sno', 's_no', 'no_'
+        ]);
+
         function parseJSONData(json) {
             sheetNames = Object.keys(json.sheets || {});
 
-            allData = (json.data || []).map(row => ({
-                no: row.no || row['no.'] || '',
-                sample_name: row.sample_name || row['sample_name'] || '',
-                gen_id: row.gen_id || row['gen_id'] || '',
-                anderson_id: row.anderson_id || row['anderson_id'] || '',
-                test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
-                single_couple: normalizeSingleCoupleTrio(row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || ''),
-                category: normalizeCategory(row.category || ''),
-                sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
-                remarks: row.remarks || '',
-                status: row.status || '',
-                snv_status: row.snv_status || '',
-                report_link: row._report_link || row.report_link || '',
-                run: row._run || row.run || '',
-                sheet: row._sheet || '',
-                source: row._source || 'API',
-                report_status: (row._report_link || row.report_link) ? 'Has Report' : 'No Report'
-            })).filter(r => r.sample_name && r.sample_name.trim());
+            allData = (json.data || []).map(row => {
+                const record = {
+                    no: row.no || row['no.'] || '',
+                    sample_name: row.sample_name || row['sample_name'] || '',
+                    gen_id: row.gen_id || row['gen_id'] || '',
+                    anderson_id: row.anderson_id || row['anderson_id'] || '',
+                    test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
+                    single_couple: normalizeSingleCoupleTrio(row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || ''),
+                    category: normalizeCategory(row.category || ''),
+                    sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
+                    remarks: row.remarks || '',
+                    status: row.status || '',
+                    snv_status: row.snv_status || '',
+                    report_release_date: row.report_release_date || '',
+                    report_link: row._report_link || row.report_link || '',
+                    run: row._run || row.run || '',
+                    sheet: row._sheet || '',
+                    source: row._source || 'API',
+                    report_status: (row._report_link || row.report_link) ? 'Has Report' : 'No Report'
+                };
+                // Preserve every other field the backend actually sent (SNV/CNV
+                // sub-columns, raw data location, project file, ...) verbatim,
+                // so nothing real in the sheet is silently dropped from the table.
+                Object.keys(row).forEach(k => {
+                    if (!HANDLED_RAW_KEYS.has(k) && !(k in record)) {
+                        record[k] = String(row[k] == null ? '' : row[k]).trim();
+                    }
+                });
+                return record;
+            }).filter(r => r.sample_name && r.sample_name.trim());
 
             console.log('Parsed:', allData.length, 'records');
             console.log('With reports:', allData.filter(r => r.report_link).length);
 
+            rebuildTableColumns();
             renderFilters();
             applyFilters();
         }
@@ -2347,28 +2410,19 @@
             ).join('');
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><h3>No results</h3><p>Adjust filters or search</p></div></td></tr>`;
-                document.getElementById('showingCount').textContent = '0';
-                document.getElementById('totalCount').textContent = allData.length;
-                return;
-            }
-
-            tbody.innerHTML = filteredData.map(r => `
-                <tr>
-                    <td class="cell-id">${esc(r.no)}</td>
-                    <td class="cell-sample" title="${esc(r.sample_name)}">${esc(r.sample_name)}</td>
-                    <td class="cell-id">${esc(r.gen_id)}</td>
-                    <td class="cell-id">${esc(r.anderson_id)}</td>
-                    <td>${r.test ? `<span class="cell-test">${esc(r.test)}</span>` : '-'}</td>
-                    <td>${esc(r.single_couple) || '-'}</td>
-                    <td>${r.category ? `<span class="cell-category">${esc(r.category)}</span>` : '-'}</td>
-                    <td class="cell-type">${esc(r.sample_type) || '-'}</td>
-                    <td class="remarks-cell" onmouseenter="showTip(event,'${esc(r.remarks)}')" onmouseleave="hideTip()">${esc(r.remarks) || '-'}</td>
-                    <td>${r.run ? `<span class="cell-run">${esc(r.run)}</span>` : '-'}</td>
+        function renderTableCell(col, r) {
+            switch (col.key) {
+                case 'no': return `<td class="cell-id">${esc(r.no)}</td>`;
+                case 'sample_name': return `<td class="cell-sample" title="${esc(r.sample_name)}">${esc(r.sample_name)}</td>`;
+                case 'gen_id': return `<td class="cell-id">${esc(r.gen_id)}</td>`;
+                case 'anderson_id': return `<td class="cell-id">${esc(r.anderson_id)}</td>`;
+                case 'test': return `<td>${r.test ? `<span class="cell-test">${esc(r.test)}</span>` : '-'}</td>`;
+                case 'single_couple': return `<td>${esc(r.single_couple) || '-'}</td>`;
+                case 'category': return `<td>${r.category ? `<span class="cell-category">${esc(r.category)}</span>` : '-'}</td>`;
+                case 'sample_type': return `<td class="cell-type">${esc(r.sample_type) || '-'}</td>`;
+                case 'remarks': return `<td class="remarks-cell" onmouseenter="showTip(event,'${esc(r.remarks)}')" onmouseleave="hideTip()">${esc(r.remarks) || '-'}</td>`;
+                case 'run': return `<td>${r.run ? `<span class="cell-run">${esc(r.run)}</span>` : '-'}</td>`;
+                case 'actions': return `
                     <td class="cell-actions">
                         ${r.report_link ? `
                             <button class="btn-view" onclick="viewPDF('${esc(r.report_link)}','${esc(r.sample_name)}')">
@@ -2380,8 +2434,26 @@
                                 PDF
                             </a>
                         ` : '<span class="no-link">No report</span>'}
-                    </td>
-                </tr>
+                    </td>`;
+                // Any other column (Status, SNV Status, Report Release Date, or a
+                // dynamically-discovered field like an SNV/CNV sub-column, raw
+                // data location, etc.) just renders its raw value generically.
+                default: return `<td>${esc(r[col.key]) || '-'}</td>`;
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${TABLE_COLUMNS.length}"><div class="empty-state"><h3>No results</h3><p>Adjust filters or search</p></div></td></tr>`;
+                document.getElementById('showingCount').textContent = '0';
+                document.getElementById('totalCount').textContent = allData.length;
+                return;
+            }
+
+            tbody.innerHTML = filteredData.map(r => `
+                <tr>${TABLE_COLUMNS.map(col => renderTableCell(col, r)).join('')}</tr>
             `).join('');
 
             document.getElementById('showingCount').textContent = filteredData.length;
@@ -2735,6 +2807,7 @@
             document.getElementById('syncDot').className = 'sync-dot';
             document.getElementById('syncText').textContent = 'Local file loaded';
 
+            rebuildTableColumns();
             renderFilters();
             applyFilters();
             closeUpload();
