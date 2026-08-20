@@ -2100,16 +2100,36 @@
             applyFilters();
         }
 
+        // snv_status holds a comma-joined combination per record (e.g. "Likely
+        // Pathogenic, Additional") since a sample can carry more than one
+        // classification. Split it into its individual labels so the filter
+        // offers the ~7 real classifications instead of one option per
+        // distinct combination.
+        function getSnvStatusLabels(value) {
+            if (!value) return [];
+            return String(value).split(',').map(s => s.trim()).filter(Boolean);
+        }
+
         // FILTERS
         function renderFilters() {
             document.getElementById('filtersGrid').innerHTML = FILTER_COLUMNS.map(col => {
-                const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
                 const counts = {};
-                const values = [...new Set(rawValues.map(v => col.key === 'test' ? getTestFilterGroupLabel(v) : v))].sort();
+                let values;
 
-                values.forEach(v => {
-                    counts[v] = allData.filter(d => (col.key === 'test' ? getTestFilterGroupLabel(d[col.key]) : d[col.key]) === v).length;
-                });
+                if (col.key === 'snv_status') {
+                    const labelSet = new Set();
+                    allData.forEach(d => getSnvStatusLabels(d.snv_status).forEach(l => labelSet.add(l)));
+                    values = [...labelSet].sort();
+                    values.forEach(v => {
+                        counts[v] = allData.filter(d => getSnvStatusLabels(d.snv_status).includes(v)).length;
+                    });
+                } else {
+                    const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
+                    values = [...new Set(rawValues.map(v => col.key === 'test' ? getTestFilterGroupLabel(v) : v))].sort();
+                    values.forEach(v => {
+                        counts[v] = allData.filter(d => (col.key === 'test' ? getTestFilterGroupLabel(d[col.key]) : d[col.key]) === v).length;
+                    });
+                }
 
                 return `
                     <div class="filter-group" id="filterGroup-${col.key}">
@@ -2260,6 +2280,9 @@
                         if (col.key === 'test') {
                             const testLabel = getTestFilterGroupLabel(row.test);
                             if (!filters.test.has(testLabel)) return false;
+                        } else if (col.key === 'snv_status') {
+                            const labels = getSnvStatusLabels(row.snv_status);
+                            if (!labels.some(l => filters.snv_status.has(l))) return false;
                         } else if (!filters[col.key].has(row[col.key])) {
                             return false;
                         }
