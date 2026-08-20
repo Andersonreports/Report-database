@@ -1427,7 +1427,7 @@
                 <div class="stat-value" id="totalSamples">0</div>
                 <div class="stat-sub" id="totalSamplesSub"></div>
             </div>
-            <div class="stat-card runs">
+            <div class="stat-card runs" id="statCardRuns">
                 <div class="stat-label">Runs</div>
                 <div class="stat-value" id="totalRuns">0</div>
                 <div class="stat-sub" id="totalRunsSub"></div>
@@ -2094,13 +2094,16 @@
         }
 
         // "Run" markers (e.g. "Run-46A") only occur in the BIOINFO REPORTS 2025
-        // sheets - Classified Reports has no concept of a run, so hide that
-        // filter (and drop any stale run selection) whenever Classified
-        // Reports is the only selected data source.
+        // sheets - Classified Reports has no concept of a run, so hide the
+        // Run filter and the Runs stat card (and drop any stale run
+        // selection) whenever Classified Reports is the only selected
+        // data source.
         function applyRunFilterVisibility() {
             const hideRunFilter = filters.source.size === 1 && filters.source.has('CLASSIFIED REPORTS');
             const group = document.getElementById('filterGroup-run');
             if (group) group.style.display = hideRunFilter ? 'none' : '';
+            const statCard = document.getElementById('statCardRuns');
+            if (statCard) statCard.style.display = hideRunFilter ? 'none' : '';
             if (hideRunFilter && filters.run.size > 0) {
                 filters.run.clear();
                 document.querySelectorAll('#options-run input[type="checkbox"]').forEach(cb => cb.checked = false);
