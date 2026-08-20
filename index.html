@@ -1968,8 +1968,13 @@
         // without merging genuinely different categories into each other.
         function normalizeCategory(value) {
             if (!value) return '';
-            let raw = String(value).trim().replace(/\s+/g, ' ');
-            raw = raw.replace(/[,;]+$/, '').trim();
+            let raw = String(value).trim();
+            // "?" is a clinical "suspected/query diagnosis" marker (e.g.
+            // "?joubert Syndrome", "?MODY/ ?T2DM.") - strip it everywhere, not
+            // just at the start, since compound entries repeat it per term.
+            raw = raw.replace(/\?/g, '');
+            raw = raw.replace(/\s+/g, ' ').trim();
+            raw = raw.replace(/[,;.]+$/, '').trim();
             if (!raw) return '';
 
             return raw.split(' ').map(word => {
