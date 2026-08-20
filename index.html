@@ -1425,6 +1425,7 @@
             { key: 'single_couple', label: 'Single/Couple' },
             { key: 'category', label: 'Category' },
             { key: 'sample_type', label: 'Sample Type' },
+            { key: 'status', label: 'Status' },
             { key: 'report_status', label: 'Report Status' },
             { key: 'sheet', label: 'Sheet/Month' },
             { key: 'source', label: 'Data Source' }
@@ -1545,6 +1546,7 @@
                 category: row.category || '',
                 sample_type: row.sample_type || row['sample_type'] || '',
                 remarks: row.remarks || '',
+                status: row.status || '',
                 report_link: row._report_link || row.report_link || '',
                 run: row._run || row.run || '',
                 sheet: row._sheet || '',
