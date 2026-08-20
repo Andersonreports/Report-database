@@ -1631,7 +1631,7 @@
             { key: 'status', label: 'Status' },
             { key: 'snv_status', label: 'SNV Status' },
             { key: 'report_status', label: 'Report Status' },
-            { key: 'sheet', label: 'Sheet/Month' },
+            { key: 'sheet', label: 'Year' },
             { key: 'source', label: 'Data Source' }
         ];
 
@@ -2242,13 +2242,13 @@
         }
 
         // Classified Reports only has meaningful Test/Category/Single-Couple-Trio/
-        // SNV Status data - everything else (Run, Sample Type, Status, Report
-        // Status, Sheet/Month, Data Source) is either empty or not applicable
-        // for that sheet, so the Advanced Filters panel is scoped down to just
-        // those four (plus the always-visible search bar) whenever Classified
-        // Reports is the only selected data source. BIOINFO REPORTS 2025 (or
-        // "All Sources") keeps every filter, unaffected.
-        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'single_couple', 'snv_status']);
+        // SNV Status/Sheet(Year) data - Run, Sample Type, Status, and Report
+        // Status are either empty or not applicable for that sheet, so the
+        // Advanced Filters panel is scoped down to just these (plus the
+        // always-visible search bar and the always-visible Data Source row)
+        // whenever Classified Reports is the only selected data source.
+        // BIOINFO REPORTS 2025 (or "All Sources") keeps every filter, unaffected.
+        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'single_couple', 'snv_status', 'sheet']);
 
         function applyFilterVisibility() {
             // Match case-insensitively and by substring - the configured source
