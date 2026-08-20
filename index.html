@@ -1745,7 +1745,7 @@
                 gen_id: row.gen_id || row['gen_id'] || '',
                 anderson_id: row.anderson_id || row['anderson_id'] || '',
                 test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
-                single_couple: row['single/couple'] || row.single_couple || row.singlecouple || '',
+                single_couple: row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || '',
                 category: row.category || '',
                 sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
                 remarks: row.remarks || '',
