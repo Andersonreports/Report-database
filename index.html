@@ -1619,7 +1619,6 @@
                 { name: 'BIOINFO REPORTS 2025', url: 'https://script.google.com/macros/s/AKfycbyfjXqMZNbpLLchWujMJ2CGY1bHEx1Hq_JevEqQ5yOzsweoTR4E1sL-RoW9voIZIcou/exec', enabled: true },
                 { name: 'CLASSIFIED REPORTS', url: 'https://script.google.com/macros/s/AKfycbyXfBk0f3kaNLzgjr6nrukO9Y2VKVhr4bLa9hHwKx6A0QbXBJsM6TbyKQGAu5rDveK65g/exec', enabled: true }
             ],
-            currentSheet: 'all',
             activeSource: 0
         };
 
@@ -1998,24 +1997,34 @@
                 return;
             }
 
+            // Tabs are just shortcuts onto the same filters.source/filters.sheet
+            // sets the Advanced Filters dropdowns use - there is only one place
+            // that actually holds "what's selected", so the two controls can
+            // never disagree with each other.
+            const noSourceFilter = filters.source.size === 0;
+            const noSheetFilter = filters.sheet.size === 0;
+
             // Add "All" tab first
-            let html = `<button class="sheet-tab ${config.currentSheet === 'all' ? 'active' : ''}" onclick="switchSheet('all')">All Sheets</button>`;
+            let html = `<button class="sheet-tab ${(noSourceFilter && noSheetFilter) ? 'active' : ''}" onclick="switchSheet('all')">All Sheets</button>`;
 
             // Group by source if multiple sources
             if (Object.keys(sourceSheets).length > 1) {
                 for (const [source, sheets] of Object.entries(sourceSheets)) {
+                    const sourceActive = filters.source.size === 1 && filters.source.has(source) && noSheetFilter;
                     // Add source header tab
-                    html += `<button class="sheet-tab source-header ${config.currentSheet === 'source:' + source ? 'active' : ''}" onclick="switchSheet('source:${esc(source)}')">${esc(source)} (All)</button>`;
+                    html += `<button class="sheet-tab source-header ${sourceActive ? 'active' : ''}" onclick="switchSheet('source:${esc(source)}')">${esc(source)} (All)</button>`;
                     // Add individual sheet tabs
                     for (const sheet of sheets) {
                         const tabKey = `${source}|||${sheet}`;
-                        html += `<button class="sheet-tab sheet-sub ${config.currentSheet === tabKey ? 'active' : ''}" onclick="switchSheet('${esc(tabKey)}')">${esc(sheet)}</button>`;
+                        const tabActive = filters.source.size === 1 && filters.source.has(source) && filters.sheet.size === 1 && filters.sheet.has(sheet);
+                        html += `<button class="sheet-tab sheet-sub ${tabActive ? 'active' : ''}" onclick="switchSheet('${esc(tabKey)}')">${esc(sheet)}</button>`;
                     }
                 }
             } else {
                 // Single source - just show sheet names
                 for (const tab of tabs) {
-                    html += `<button class="sheet-tab ${config.currentSheet === tab.key ? 'active' : ''}" onclick="switchSheet('${esc(tab.key)}')">${esc(tab.sheet)}</button>`;
+                    const tabActive = filters.sheet.size === 1 && filters.sheet.has(tab.sheet);
+                    html += `<button class="sheet-tab ${tabActive ? 'active' : ''}" onclick="switchSheet('${esc(tab.key)}')">${esc(tab.sheet)}</button>`;
                 }
             }
 
@@ -2023,9 +2032,20 @@
         }
 
         function switchSheet(name) {
-            config.currentSheet = name;
-            localStorage.setItem('advatConfigV2', JSON.stringify(config));
+            filters.source.clear();
+            filters.sheet.clear();
+            if (name.startsWith('source:')) {
+                filters.source.add(name.substring(7));
+            } else if (name.includes('|||')) {
+                const [source, sheet] = name.split('|||');
+                filters.source.add(source);
+                filters.sheet.add(sheet);
+            } else if (name !== 'all') {
+                filters.sheet.add(name);
+            }
+            renderFilters();
             renderSheetTabs();
+            renderActiveFilters();
             applyFilters();
         }
 
@@ -2113,6 +2133,7 @@
             FILTER_COLUMNS.forEach(c => filters[c.key].clear());
             document.getElementById('searchInput').value = '';
             renderFilters();
+            renderSheetTabs();
             applyFilters();
         }
 
@@ -2120,6 +2141,7 @@
             const trigger = document.querySelector(`.multi-select[data-key="${key}"] .trigger-text`);
             trigger.innerHTML = filters[key].size > 0 ? `<span class="selected-count">${filters[key].size}</span> selected` : `<span class="placeholder">All</span>`;
             renderActiveFilters();
+            if (key === 'sheet' || key === 'source') renderSheetTabs();
         }
 
         function renderActiveFilters() {
@@ -2145,22 +2167,6 @@
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
 
             filteredData = allData.filter(row => {
-                // Sheet/Source filtering
-                if (config.currentSheet !== 'all') {
-                    if (config.currentSheet.startsWith('source:')) {
-                        // Filter by source only
-                        const sourceName = config.currentSheet.substring(7);
-                        if (row.source !== sourceName) return false;
-                    } else if (config.currentSheet.includes('|||')) {
-                        // Filter by specific source and sheet
-                        const [source, sheet] = config.currentSheet.split('|||');
-                        if (row.source !== source || row.sheet !== sheet) return false;
-                    } else {
-                        // Legacy: filter by sheet name only
-                        if (row.sheet !== config.currentSheet) return false;
-                    }
-                }
-
                 if (search && !Object.values(row).join(' ').toLowerCase().includes(search)) return false;
                 for (const col of FILTER_COLUMNS) {
                     if (filters[col.key].size > 0) {
