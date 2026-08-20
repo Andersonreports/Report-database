@@ -319,10 +319,10 @@ function canonicalHeader(norm) {
   return h;
 }
 
-// Columns under a merged group that are annotation/notes rather than a real
-// classification (e.g. "Additional" holds free-text variant details, not a
-// YES/NO flag) are excluded from the derived status label.
-const GROUP_STATUS_EXCLUDE_SUFFIXES = new Set(['additional', 'remarks', 'remark', 'notes', 'note']);
+// Columns under a merged group that are pure free-text annotation, not a
+// classification, are excluded from the derived status label. "Additional"
+// is kept - it's one of the real classification columns in this sheet.
+const GROUP_STATUS_EXCLUDE_SUFFIXES = new Set(['remarks', 'remark', 'notes', 'note']);
 const GROUP_STATUS_NEGATIVE_VALUES = new Set(['no', 'n', 'na', 'n_a', 'nil', 'none', '-']);
 
 function deriveGroupStatus(record, prefix) {
