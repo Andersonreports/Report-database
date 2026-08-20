@@ -1635,53 +1635,80 @@
             { key: 'source', label: 'Data Source' }
         ];
 
-        // Columns every source has, in a sensible fixed order. Any OTHER field
-        // actually present in the sheet (SNV/CNV sub-columns, raw data
-        // location, project file, etc.) gets appended dynamically once data
-        // loads, by rebuildTableColumns() - so the table always reflects every
-        // column really in the sheet instead of a hardcoded subset.
-        const FIXED_TABLE_COLUMNS = [
-            { key: 'no', label: 'No', sortable: true },
-            { key: 'sample_name', label: 'Sample Name', sortable: true },
-            { key: 'gen_id', label: 'Gen ID', sortable: true },
-            { key: 'anderson_id', label: 'Anderson ID', sortable: true },
-            { key: 'test', label: 'Test', sortable: true },
-            { key: 'single_couple', label: 'Single/Couple', sortable: true },
-            { key: 'category', label: 'Category', sortable: true },
-            { key: 'sample_type', label: 'Sample Type', sortable: true },
-            { key: 'remarks', label: 'Remarks', sortable: false },
-            { key: 'status', label: 'Status', sortable: true },
-            { key: 'snv_status', label: 'SNV Status', sortable: true },
-            { key: 'report_release_date', label: 'Report Release Date', sortable: true },
-            { key: 'run', label: 'Run', sortable: true }
-        ];
-
         // Fields that exist on every row for internal bookkeeping/filtering
-        // (not a real sheet column) - never turned into their own dynamic
-        // table column even though they're keys on the record.
-        const NON_COLUMN_KEYS = new Set([
-            ...FIXED_TABLE_COLUMNS.map(c => c.key),
-            'report_link', 'sheet', 'source', 'report_status'
-        ]);
+        // (not a real sheet column) - never turned into their own table
+        // column. 'run' is handled separately below (see rebuildTableColumns)
+        // since it's a derived marker, not a literal column, so it has no
+        // real position in the sheet's left-to-right order.
+        const NON_COLUMN_KEYS = new Set(['report_link', 'sheet', 'source', 'report_status', 'run']);
 
-        let TABLE_COLUMNS = [...FIXED_TABLE_COLUMNS, { key: 'actions', label: 'Actions', sortable: false }];
+        // Raw backend key -> the final record key it becomes, for the handful
+        // of fields that get renamed/aliased. Anything not listed here keeps
+        // its own name (that's how a dynamically-discovered column, e.g.
+        // snv_pathogenic, survives with its real name and real position).
+        const RAW_KEY_TO_FINAL_KEY = {
+            'no.': 'no', 'sno': 'no', 's_no': 'no', 'no_': 'no',
+            'samplename': 'sample_name', 'genid': 'gen_id', 'andersonid': 'anderson_id',
+            'single_couple_trio': 'single_couple', 'single_coupletrio': 'single_couple',
+            'single/couple': 'single_couple', 'singlecouple': 'single_couple',
+            'sampletype': 'sample_type',
+            'reportreleasedate': 'report_release_date', 'releasedate': 'report_release_date'
+        };
+        // Bookkeeping keys the backend adds that were never a real sheet
+        // column - skipped entirely when reading off the sheet's real order.
+        const RAW_KEY_EXCLUDE_FROM_ORDER = new Set(['_run', '_sheet', '_report_link', '_source', 'report_link', 'rawdata']);
+
+        const COLUMN_LABEL_OVERRIDES = {
+            no: 'No', sample_name: 'Sample Name', gen_id: 'Gen ID', anderson_id: 'Anderson ID',
+            test: 'Test', single_couple: 'Single/Couple', category: 'Category', sample_type: 'Sample Type',
+            remarks: 'Remarks', status: 'Status', snv_status: 'SNV Status',
+            report_release_date: 'Report Release Date', run: 'Run'
+        };
 
         function prettifyColumnKey(key) {
             const UPPERCASE_WORDS = new Set(['vus', 'snv', 'cnv', 'poc', 'af']);
             return key.split('_').map(w => (UPPERCASE_WORDS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
         }
 
-        // Rebuild TABLE_COLUMNS from whatever fields are actually present in
-        // allData once it's loaded, so a source-specific column (e.g.
-        // snv_pathogenic, cnv_recommendation, raw_data_location) shows up
-        // without needing to be hardcoded here.
-        function rebuildTableColumns() {
-            const dynamicKeys = new Set();
-            allData.forEach(r => Object.keys(r).forEach(k => {
-                if (!NON_COLUMN_KEYS.has(k)) dynamicKeys.add(k);
-            }));
-            const dynamicColumns = [...dynamicKeys].sort().map(k => ({ key: k, label: prettifyColumnKey(k), sortable: true }));
-            TABLE_COLUMNS = [...FIXED_TABLE_COLUMNS, ...dynamicColumns, { key: 'actions', label: 'Actions', sortable: false }];
+        let TABLE_COLUMNS = [
+            { key: 'no', label: 'No', sortable: true },
+            { key: 'sample_name', label: 'Sample Name', sortable: true },
+            { key: 'actions', label: 'Actions', sortable: false }
+        ];
+
+        // Rebuild TABLE_COLUMNS to mirror the sheet's actual left-to-right
+        // column order. `rawRows` (the untouched backend rows, before any
+        // frontend renaming) is the source of truth for that order - the
+        // backend inserts each field into the row object as it reads that
+        // column, so Object.keys() on a raw row already reflects the sheet
+        // layout. Falls back to allData's own key order (e.g. for a locally
+        // uploaded file, which never had "raw" backend rows).
+        function rebuildTableColumns(rawRows) {
+            const orderedKeys = [];
+            const seen = new Set();
+            const addKey = key => { if (!seen.has(key)) { seen.add(key); orderedKeys.push(key); } };
+
+            if (rawRows && rawRows.length) {
+                rawRows.forEach(row => Object.keys(row).forEach(rawKey => {
+                    if (RAW_KEY_EXCLUDE_FROM_ORDER.has(rawKey)) return;
+                    addKey(RAW_KEY_TO_FINAL_KEY[rawKey] || rawKey);
+                }));
+            } else {
+                allData.forEach(r => Object.keys(r).forEach(k => {
+                    if (!NON_COLUMN_KEYS.has(k)) addKey(k);
+                }));
+            }
+
+            // 'run' (from the "Run-46A" section-marker rows) and 'actions'
+            // (the report View/PDF buttons) aren't literal sheet columns, so
+            // they always go last rather than wherever they'd fall naturally.
+            const realColumnKeys = orderedKeys.filter(k => !NON_COLUMN_KEYS.has(k) && k !== 'run');
+            TABLE_COLUMNS = [...realColumnKeys, 'run'].map(key => ({
+                key,
+                label: COLUMN_LABEL_OVERRIDES[key] || prettifyColumnKey(key),
+                sortable: key !== 'remarks'
+            })).concat({ key: 'actions', label: 'Actions', sortable: false });
+
             renderTableHead();
         }
 
@@ -1823,7 +1850,7 @@
             console.log('Parsed:', allData.length, 'records');
             console.log('With reports:', allData.filter(r => r.report_link).length);
 
-            rebuildTableColumns();
+            rebuildTableColumns(json.data || []);
             renderFilters();
             applyFilters();
         }
@@ -2265,12 +2292,16 @@
         // BIOINFO REPORTS 2025 (or "All Sources") keeps every filter, unaffected.
         const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'single_couple', 'snv_status', 'sheet']);
 
-        function applyFilterVisibility() {
-            // Match case-insensitively and by substring - the configured source
-            // name is whatever was typed into Settings ("Classified Reports",
-            // "CLASSIFIED REPORTS", etc.), not a fixed literal.
+        // Match case-insensitively and by substring - the configured source
+        // name is whatever was typed into Settings ("Classified Reports",
+        // "CLASSIFIED REPORTS", etc.), not a fixed literal.
+        function isClassifiedReportsOnly() {
             const onlySelectedSource = filters.source.size === 1 ? [...filters.source][0] : '';
-            const restrictToClassified = onlySelectedSource.toLowerCase().includes('classified');
+            return onlySelectedSource.toLowerCase().includes('classified');
+        }
+
+        function applyFilterVisibility() {
+            const restrictToClassified = isClassifiedReportsOnly();
 
             FILTER_COLUMNS.forEach(col => {
                 // Data Source is the only remaining way to switch sources (the
@@ -2290,6 +2321,10 @@
             if (statCard) statCard.style.display = restrictToClassified ? 'none' : '';
 
             renderActiveFilters();
+            // The table's own Sample Type/Remarks/Status columns are hidden
+            // under this same condition (see getVisibleTableColumns) - keep
+            // the rendered <th>s in sync whenever the source selection changes.
+            renderTableHead();
         }
 
         function toggleDropdown(key) {
@@ -2438,8 +2473,19 @@
         }
 
         // TABLE
+        // Sample Type, Remarks, and Status are always empty for Classified
+        // Reports (that sheet has no such columns), so they're dropped from
+        // the table entirely whenever it's the only selected data source -
+        // same live reaction as the Advanced Filters scoping.
+        const TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED = new Set(['sample_type', 'remarks', 'status']);
+
+        function getVisibleTableColumns() {
+            if (!isClassifiedReportsOnly()) return TABLE_COLUMNS;
+            return TABLE_COLUMNS.filter(c => !TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED.has(c.key));
+        }
+
         function renderTableHead() {
-            document.getElementById('tableHead').innerHTML = TABLE_COLUMNS.map(c =>
+            document.getElementById('tableHead').innerHTML = getVisibleTableColumns().map(c =>
                 `<th data-col="${c.key}" ${c.sortable ? `onclick="sortBy('${c.key}')"` : ''}>${c.label}${c.sortable ? ' <span class="sort-icon">↕</span>' : ''}</th>`
             ).join('');
         }
@@ -2478,16 +2524,17 @@
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            const columns = getVisibleTableColumns();
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${TABLE_COLUMNS.length}"><div class="empty-state"><h3>No results</h3><p>Adjust filters or search</p></div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${columns.length}"><div class="empty-state"><h3>No results</h3><p>Adjust filters or search</p></div></td></tr>`;
                 document.getElementById('showingCount').textContent = '0';
                 document.getElementById('totalCount').textContent = allData.length;
                 return;
             }
 
             tbody.innerHTML = filteredData.map(r => `
-                <tr>${TABLE_COLUMNS.map(col => renderTableCell(col, r)).join('')}</tr>
+                <tr>${columns.map(col => renderTableCell(col, r)).join('')}</tr>
             `).join('');
 
             document.getElementById('showingCount').textContent = filteredData.length;
