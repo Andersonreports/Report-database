@@ -1746,7 +1746,7 @@
                 gen_id: row.gen_id || row['gen_id'] || '',
                 anderson_id: row.anderson_id || row['anderson_id'] || '',
                 test: normalizeTestName(row.test || row['test'] || row.Test || row['Test'] || row.TEST || ''),
-                single_couple: row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || '',
+                single_couple: normalizeSingleCoupleTrio(row.single_couple_trio || row.single_coupletrio || row['single/couple'] || row.single_couple || row.singlecouple || ''),
                 category: row.category || '',
                 sample_type: normalizeSampleType(row.sample_type || row['sample_type'] || ''),
                 remarks: row.remarks || '',
@@ -1848,6 +1848,15 @@
                 if (word === 'dna' || word === 'rna' || word === 'csf') return word.toUpperCase();
                 return word.charAt(0).toUpperCase() + word.slice(1);
             }).join(' ');
+        }
+
+        // Display-only casing fix (e.g. Classified Reports mixes "single" and
+        // "Single" across years) - never written back to the sheet.
+        function normalizeSingleCoupleTrio(value) {
+            if (!value) return '';
+            const raw = String(value).trim();
+            if (!raw) return '';
+            return raw.split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
         }
 
         function normalizeTestName(value) {
