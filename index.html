@@ -1878,6 +1878,20 @@
                             return candidate;
                         }
                     }
+                    // Typos that aren't a clean prefix (transposed/missing letters,
+                    // e.g. "Coule"/"Coulpe" for "Couple") - fall back to whichever
+                    // canonical term is closest by edit distance, same threshold
+                    // normalizeSampleType uses. Anything further away (like an
+                    // unrelated word that landed in this column by mistake) is
+                    // left as-is rather than force-mapped.
+                    let best = { distance: Infinity, label: '' };
+                    for (const candidate of BASE_CANONICAL) {
+                        const distance = getEditDistance(lower, candidate.toLowerCase());
+                        if (distance < best.distance) best = { distance, label: candidate };
+                    }
+                    if (best.distance <= 2 && best.distance <= Math.ceil(lower.length / 2)) {
+                        return best.label;
+                    }
                 }
                 return lower.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             });
