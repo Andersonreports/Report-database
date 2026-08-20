@@ -162,6 +162,37 @@ function parseSheetData(sheet, sheetName, opts) {
       headerSeen = true;
       diagnostics.headerRowsFound++;
       diagnostics.headerRowIndices.push(i + 1);
+
+      // Merged group headers (e.g. "SNV" / "CNV" spanning several columns)
+      // leave their sub-columns blank in this row and put the real column
+      // names ("Pathogenic", "Likely Pathogenic", "VUS", ...) in the row
+      // directly below. Detect that continuation row, fold its labels into
+      // `headers` prefixed by the group name from this row (so they don't
+      // collide with an identically-named sub-column under a different
+      // group), and skip it so it isn't parsed as a data row.
+      const nextRow = data[i + 1];
+      if (nextRow) {
+        const nextNormalized = nextRow.map(normalizeHeader);
+        let nextHits = 0;
+        let subLabelCount = 0;
+        for (let j = 0; j < nextNormalized.length; j++) {
+          if (nextNormalized[j] && HEADER_TOKENS.has(nextNormalized[j])) nextHits++;
+          if (nextNormalized[j]) subLabelCount++;
+        }
+        if (nextHits === 0 && subLabelCount >= 2) {
+          let currentGroup = '';
+          for (let j = 0; j < row.length; j++) {
+            const rawGroupCell = String(row[j] == null ? '' : row[j]).trim();
+            if (rawGroupCell) currentGroup = normalizeHeader(rawGroupCell);
+            if (nextNormalized[j]) {
+              headers[j] = currentGroup ? (currentGroup + '_' + nextNormalized[j]) : nextNormalized[j];
+            }
+          }
+          diagnostics.headerRowsFound++;
+          diagnostics.headerRowIndices.push(i + 2);
+          i++; // consume the sub-header row, don't parse it as data
+        }
+      }
       continue;
     }
 
@@ -222,6 +253,11 @@ function parseSheetData(sheet, sheetName, opts) {
       continue;
     }
 
+    // Derive a single human-readable classification from whichever snv_<label>
+    // sub-column (from the merged "SNV" group header) is actually populated in
+    // this sheet - only labels that exist as real columns can ever appear here.
+    record.snv_status = deriveGroupStatus(record, 'snv_');
+
     // Link-coverage tracking: how many dated rows actually got a link, and a
     // few examples of dated rows that did NOT (so misses can be inspected).
     if (record.report_release_date) {
@@ -281,6 +317,33 @@ function canonicalHeader(norm) {
   if (h.indexOf('raw') > -1 || h.indexOf('location') > -1) return 'raw_data_location';
   if (h === 'test' || h.indexOf('test') > -1) return 'test';
   return h;
+}
+
+// Columns under a merged group that are annotation/notes rather than a real
+// classification (e.g. "Additional" holds free-text variant details, not a
+// YES/NO flag) are excluded from the derived status label.
+const GROUP_STATUS_EXCLUDE_SUFFIXES = new Set(['additional', 'remarks', 'remark', 'notes', 'note']);
+const GROUP_STATUS_NEGATIVE_VALUES = new Set(['no', 'n', 'na', 'n_a', 'nil', 'none', '-']);
+
+function deriveGroupStatus(record, prefix) {
+  const labels = [];
+  Object.keys(record).forEach(function (key) {
+    if (key.indexOf(prefix) !== 0) return;
+    const suffix = key.slice(prefix.length);
+    if (GROUP_STATUS_EXCLUDE_SUFFIXES.has(suffix)) return;
+    const val = String(record[key] || '').trim();
+    if (!val || GROUP_STATUS_NEGATIVE_VALUES.has(val.toLowerCase())) return;
+    labels.push(prettifyGroupStatusLabel(suffix));
+  });
+  return labels.join(', ');
+}
+
+function prettifyGroupStatusLabel(suffix) {
+  return suffix.split('_').map(function (w) {
+    if (w === 'vus') return 'VUS';
+    if (w === 'het') return 'Het';
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
 }
 
 function bumpReason(diag, reason) {
