@@ -1419,8 +1419,6 @@
             </div>
         </header>
 
-        <div class="sheet-tabs" id="sheetTabs"></div>
-
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-label">Total Samples</div>
@@ -1459,6 +1457,8 @@
                 </div>
                 <button class="clear-filters" onclick="clearAllFilters()">Clear All Filters</button>
             </div>
+
+            <div class="filters-grid" id="dataSourceFilterRow" style="margin-bottom: 16px;"></div>
 
             <div class="search-row">
                 <div class="search-bar">
@@ -1738,7 +1738,6 @@
 
         function parseJSONData(json) {
             sheetNames = Object.keys(json.sheets || {});
-            renderSheetTabs();
 
             allData = (json.data || []).map(row => ({
                 no: row.no || row['no.'] || '',
@@ -2064,86 +2063,6 @@
             return dp[a.length][b.length];
         }
 
-        // SHEET TABS
-        function renderSheetTabs() {
-            const container = document.getElementById('sheetTabs');
-
-            // Get unique source-sheet combinations
-            const sourceSheets = {};
-            allData.forEach(d => {
-                const source = d.source || 'Unknown';
-                const sheet = d.sheet || 'Data';
-                if (!sourceSheets[source]) sourceSheets[source] = new Set();
-                sourceSheets[source].add(sheet);
-            });
-
-            // Build tabs array
-            const tabs = [];
-            for (const [source, sheets] of Object.entries(sourceSheets)) {
-                for (const sheet of sheets) {
-                    const tabKey = `${source}|||${sheet}`;
-                    const tabLabel = Object.keys(sourceSheets).length > 1 ? `${source} - ${sheet}` : sheet;
-                    tabs.push({ key: tabKey, label: tabLabel, source, sheet });
-                }
-            }
-
-            if (tabs.length <= 1) {
-                container.innerHTML = '';
-                return;
-            }
-
-            // Tabs are just shortcuts onto the same filters.source/filters.sheet
-            // sets the Advanced Filters dropdowns use - there is only one place
-            // that actually holds "what's selected", so the two controls can
-            // never disagree with each other.
-            const noSourceFilter = filters.source.size === 0;
-            const noSheetFilter = filters.sheet.size === 0;
-
-            // Add "All" tab first
-            let html = `<button class="sheet-tab ${(noSourceFilter && noSheetFilter) ? 'active' : ''}" onclick="switchSheet('all')">All Sheets</button>`;
-
-            // Group by source if multiple sources
-            if (Object.keys(sourceSheets).length > 1) {
-                for (const [source, sheets] of Object.entries(sourceSheets)) {
-                    const sourceActive = filters.source.size === 1 && filters.source.has(source) && noSheetFilter;
-                    // Add source header tab
-                    html += `<button class="sheet-tab source-header ${sourceActive ? 'active' : ''}" onclick="switchSheet('source:${esc(source)}')">${esc(source)} (All)</button>`;
-                    // Add individual sheet tabs
-                    for (const sheet of sheets) {
-                        const tabKey = `${source}|||${sheet}`;
-                        const tabActive = filters.source.size === 1 && filters.source.has(source) && filters.sheet.size === 1 && filters.sheet.has(sheet);
-                        html += `<button class="sheet-tab sheet-sub ${tabActive ? 'active' : ''}" onclick="switchSheet('${esc(tabKey)}')">${esc(sheet)}</button>`;
-                    }
-                }
-            } else {
-                // Single source - just show sheet names
-                for (const tab of tabs) {
-                    const tabActive = filters.sheet.size === 1 && filters.sheet.has(tab.sheet);
-                    html += `<button class="sheet-tab ${tabActive ? 'active' : ''}" onclick="switchSheet('${esc(tab.key)}')">${esc(tab.sheet)}</button>`;
-                }
-            }
-
-            container.innerHTML = html;
-        }
-
-        function switchSheet(name) {
-            filters.source.clear();
-            filters.sheet.clear();
-            if (name.startsWith('source:')) {
-                filters.source.add(name.substring(7));
-            } else if (name.includes('|||')) {
-                const [source, sheet] = name.split('|||');
-                filters.source.add(source);
-                filters.sheet.add(sheet);
-            } else if (name !== 'all') {
-                filters.sheet.add(name);
-            }
-            renderFilters();
-            renderSheetTabs();
-            renderActiveFilters();
-            applyFilters();
-        }
-
         // snv_status holds a comma-joined combination per record (e.g. "Likely
         // Pathogenic, Additional") since a sample can carry more than one
         // classification. Split it into its individual labels so the filter
@@ -2177,56 +2096,66 @@
         }
 
         // FILTERS
-        function renderFilters() {
-            document.getElementById('filtersGrid').innerHTML = FILTER_COLUMNS.map(col => {
-                const counts = {};
-                let values;
+        function buildFilterGroupHtml(col) {
+            const counts = {};
+            let values;
 
-                if (col.key === 'snv_status') {
-                    const labelSet = new Set();
-                    allData.forEach(d => getSnvStatusLabels(d.snv_status).forEach(l => labelSet.add(l)));
-                    values = [...labelSet].sort();
-                    values.forEach(v => {
-                        counts[v] = allData.filter(d => getSnvStatusLabels(d.snv_status).includes(v)).length;
-                    });
-                } else {
-                    const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
-                    values = [...new Set(rawValues.map(v => getFilterGroupLabel(col.key, v)).filter(Boolean))].sort();
-                    values.forEach(v => {
-                        counts[v] = allData.filter(d => getFilterGroupLabel(col.key, d[col.key]) === v).length;
-                    });
-                }
+            if (col.key === 'snv_status') {
+                const labelSet = new Set();
+                allData.forEach(d => getSnvStatusLabels(d.snv_status).forEach(l => labelSet.add(l)));
+                values = [...labelSet].sort();
+                values.forEach(v => {
+                    counts[v] = allData.filter(d => getSnvStatusLabels(d.snv_status).includes(v)).length;
+                });
+            } else {
+                const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
+                values = [...new Set(rawValues.map(v => getFilterGroupLabel(col.key, v)).filter(Boolean))].sort();
+                values.forEach(v => {
+                    counts[v] = allData.filter(d => getFilterGroupLabel(col.key, d[col.key]) === v).length;
+                });
+            }
 
-                return `
-                    <div class="filter-group" id="filterGroup-${col.key}">
-                        <label>${col.label} <span class="count">${values.length}</span></label>
-                        <div class="multi-select" data-key="${col.key}">
-                            <button class="multi-select-trigger" onclick="toggleDropdown('${col.key}')">
-                                <span class="trigger-text">${filters[col.key].size > 0 ? `<span class="selected-count">${filters[col.key].size}</span> selected` : `<span class="placeholder">All</span>`}</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                            </button>
-                            <div class="multi-select-dropdown" id="dropdown-${col.key}">
-                                <div class="multi-select-search">
-                                    <input type="text" placeholder="Search..." onkeyup="filterOptions('${col.key}', this.value)">
-                                </div>
-                                <div class="multi-select-options" id="options-${col.key}">
-                                    ${values.map(v => `
-                                        <label class="multi-select-option" data-value="${esc(v)}">
-                                            <input type="checkbox" ${filters[col.key].has(v) ? 'checked' : ''} onchange="toggleVal('${col.key}', '${esc(v)}', this.checked)">
-                                            <span class="option-label">${esc(v)}</span>
-                                            <span class="option-count">${counts[v]}</span>
-                                        </label>
-                                    `).join('')}
-                                </div>
-                                <div class="multi-select-actions">
-                                    <button class="btn-select-all" onclick="selectAll('${col.key}')">Select All</button>
-                                    <button class="btn-clear-filter" onclick="clearFilter('${col.key}')">Clear</button>
-                                </div>
+            return `
+                <div class="filter-group" id="filterGroup-${col.key}">
+                    <label>${col.label} <span class="count">${values.length}</span></label>
+                    <div class="multi-select" data-key="${col.key}">
+                        <button class="multi-select-trigger" onclick="toggleDropdown('${col.key}')">
+                            <span class="trigger-text">${filters[col.key].size > 0 ? `<span class="selected-count">${filters[col.key].size}</span> selected` : `<span class="placeholder">All</span>`}</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div class="multi-select-dropdown" id="dropdown-${col.key}">
+                            <div class="multi-select-search">
+                                <input type="text" placeholder="Search..." onkeyup="filterOptions('${col.key}', this.value)">
+                            </div>
+                            <div class="multi-select-options" id="options-${col.key}">
+                                ${values.map(v => `
+                                    <label class="multi-select-option" data-value="${esc(v)}">
+                                        <input type="checkbox" ${filters[col.key].has(v) ? 'checked' : ''} onchange="toggleVal('${col.key}', '${esc(v)}', this.checked)">
+                                        <span class="option-label">${esc(v)}</span>
+                                        <span class="option-count">${counts[v]}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                            <div class="multi-select-actions">
+                                <button class="btn-select-all" onclick="selectAll('${col.key}')">Select All</button>
+                                <button class="btn-clear-filter" onclick="clearFilter('${col.key}')">Clear</button>
                             </div>
                         </div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `;
+        }
+
+        function renderFilters() {
+            // Data Source gets its own row at the top of Advanced Filters
+            // (replacing the old separate Sheet Tabs bar) - everything else
+            // stays in the main grid below it.
+            document.getElementById('dataSourceFilterRow').innerHTML = FILTER_COLUMNS
+                .filter(col => col.key === 'source')
+                .map(buildFilterGroupHtml).join('');
+            document.getElementById('filtersGrid').innerHTML = FILTER_COLUMNS
+                .filter(col => col.key !== 'source')
+                .map(buildFilterGroupHtml).join('');
             applyFilterVisibility();
         }
 
@@ -2247,7 +2176,9 @@
             const restrictToClassified = onlySelectedSource.toLowerCase().includes('classified');
 
             FILTER_COLUMNS.forEach(col => {
-                const hide = restrictToClassified && !CLASSIFIED_REPORTS_ONLY_FILTER_KEYS.has(col.key);
+                // Data Source is the only remaining way to switch sources (the
+                // old Sheet Tabs bar is gone), so it must never hide itself.
+                const hide = col.key !== 'source' && restrictToClassified && !CLASSIFIED_REPORTS_ONLY_FILTER_KEYS.has(col.key);
                 const group = document.getElementById(`filterGroup-${col.key}`);
                 if (group) group.style.display = hide ? 'none' : '';
                 if (hide && filters[col.key].size > 0) {
@@ -2305,7 +2236,6 @@
             FILTER_COLUMNS.forEach(c => filters[c.key].clear());
             document.getElementById('searchInput').value = '';
             renderFilters();
-            renderSheetTabs();
             applyFilters();
         }
 
@@ -2313,7 +2243,6 @@
             const trigger = document.querySelector(`.multi-select[data-key="${key}"] .trigger-text`);
             trigger.innerHTML = filters[key].size > 0 ? `<span class="selected-count">${filters[key].size}</span> selected` : `<span class="placeholder">All</span>`;
             renderActiveFilters();
-            if (key === 'sheet' || key === 'source') renderSheetTabs();
             if (key === 'source') applyFilterVisibility();
         }
 
@@ -2806,7 +2735,6 @@
             document.getElementById('syncDot').className = 'sync-dot';
             document.getElementById('syncText').textContent = 'Local file loaded';
 
-            renderSheetTabs();
             renderFilters();
             applyFilters();
             closeUpload();
