@@ -2110,6 +2110,22 @@
             return String(value).split(',').map(s => s.trim()).filter(Boolean);
         }
 
+        // Single/Couple/Trio should filter on just the base term - the
+        // detailed compound value ("Single - POC", "Single - AF", ...) still
+        // displays in the table, but the filter groups everything under its
+        // base Single/Couple/Trio so it only ever offers those 3 options.
+        function getSingleCoupleTrioFilterGroupLabel(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            return raw.split(' - ')[0].trim();
+        }
+
+        function getFilterGroupLabel(key, value) {
+            if (key === 'test') return getTestFilterGroupLabel(value);
+            if (key === 'single_couple') return getSingleCoupleTrioFilterGroupLabel(value);
+            return value;
+        }
+
         // FILTERS
         function renderFilters() {
             document.getElementById('filtersGrid').innerHTML = FILTER_COLUMNS.map(col => {
@@ -2125,9 +2141,9 @@
                     });
                 } else {
                     const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
-                    values = [...new Set(rawValues.map(v => col.key === 'test' ? getTestFilterGroupLabel(v) : v))].sort();
+                    values = [...new Set(rawValues.map(v => getFilterGroupLabel(col.key, v)))].sort();
                     values.forEach(v => {
-                        counts[v] = allData.filter(d => (col.key === 'test' ? getTestFilterGroupLabel(d[col.key]) : d[col.key]) === v).length;
+                        counts[v] = allData.filter(d => getFilterGroupLabel(col.key, d[col.key]) === v).length;
                     });
                 }
 
@@ -2277,12 +2293,12 @@
                 if (search && !Object.values(row).join(' ').toLowerCase().includes(search)) return false;
                 for (const col of FILTER_COLUMNS) {
                     if (filters[col.key].size > 0) {
-                        if (col.key === 'test') {
-                            const testLabel = getTestFilterGroupLabel(row.test);
-                            if (!filters.test.has(testLabel)) return false;
-                        } else if (col.key === 'snv_status') {
+                        if (col.key === 'snv_status') {
                             const labels = getSnvStatusLabels(row.snv_status);
                             if (!labels.some(l => filters.snv_status.has(l))) return false;
+                        } else if (col.key === 'test' || col.key === 'single_couple') {
+                            const groupLabel = getFilterGroupLabel(col.key, row[col.key]);
+                            if (!filters[col.key].has(groupLabel)) return false;
                         } else if (!filters[col.key].has(row[col.key])) {
                             return false;
                         }
