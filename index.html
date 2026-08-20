@@ -1975,6 +1975,12 @@
             raw = raw.replace(/\?/g, '');
             raw = raw.replace(/\s+/g, ' ').trim();
             raw = raw.replace(/[,;.]+$/, '').trim();
+            // Strip a trailing, unmatched ")" (e.g. "Adpkd)") - a stray typo,
+            // not a real "(...)" annotation like "Fetal Cardiac (POC)", which
+            // has a matching "(" and is left alone.
+            while (raw.endsWith(')') && (raw.split('(').length - 1) < (raw.split(')').length - 1)) {
+                raw = raw.slice(0, -1).trim();
+            }
             if (!raw) return '';
 
             return raw.split(' ').map(word => {
@@ -2104,6 +2110,10 @@
         function getTestFilterGroupLabel(value) {
             const raw = String(value || '').trim();
             if (!raw) return '';
+            // A bare number ("3") isn't a real test name - a stray value from
+            // a misaligned cell somewhere - so it's excluded as a filter
+            // option rather than shown as if it were a legitimate test.
+            if (/^\d+$/.test(raw)) return '';
             const normalized = raw.toLowerCase()
                 .replace(/[-_]/g, ' ')
                 .replace(/[^a-z0-9 ]+/g, ' ')
