@@ -2477,7 +2477,9 @@
         // Reports (that sheet has no such columns), so they're dropped from
         // the table entirely whenever it's the only selected data source -
         // same live reaction as the Advanced Filters scoping.
-        const TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED = new Set(['sample_type', 'remarks', 'status']);
+        const TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED = new Set([
+            'sample_type', 'remarks', 'status', 'gen_id', 'project_file', 'raw_data_location'
+        ]);
 
         function getVisibleTableColumns() {
             if (!isClassifiedReportsOnly()) return TABLE_COLUMNS;
