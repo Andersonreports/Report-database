@@ -2154,7 +2154,11 @@
         const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'single_couple', 'snv_status']);
 
         function applyFilterVisibility() {
-            const restrictToClassified = filters.source.size === 1 && filters.source.has('CLASSIFIED REPORTS');
+            // Match case-insensitively and by substring - the configured source
+            // name is whatever was typed into Settings ("Classified Reports",
+            // "CLASSIFIED REPORTS", etc.), not a fixed literal.
+            const onlySelectedSource = filters.source.size === 1 ? [...filters.source][0] : '';
+            const restrictToClassified = onlySelectedSource.toLowerCase().includes('classified');
 
             FILTER_COLUMNS.forEach(col => {
                 const hide = restrictToClassified && !CLASSIFIED_REPORTS_ONLY_FILTER_KEYS.has(col.key);
