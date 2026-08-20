@@ -2152,9 +2152,28 @@
             return '';
         }
 
+        // Category has the same misalignment problem in reverse - values that
+        // belong to Single/Couple/Trio or Test (e.g. "single", "WES", "POC")
+        // land in the category column on the same broken rows, and show up as
+        // bogus category options. Excludes only known non-category vocabulary;
+        // it does not touch the underlying value or the ~60+ real categories.
+        const CATEGORY_INVALID_VALUES = new Set([
+            'single', 'couple', 'trio', 'poc', 'af', 'wes', 'ces', 'wgs', 'ngs', 'wmgs',
+            'pathogenic', 'likely pathogenic', 'vus', 'no pathogenic', 'additional',
+            'compound heterozygous', 'likely compound heterozygous'
+        ]);
+
+        function getCategoryFilterGroupLabel(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            if (CATEGORY_INVALID_VALUES.has(raw.toLowerCase())) return '';
+            return raw;
+        }
+
         function getFilterGroupLabel(key, value) {
             if (key === 'test') return getTestFilterGroupLabel(value);
             if (key === 'single_couple') return getSingleCoupleTrioFilterGroupLabel(value);
+            if (key === 'category') return getCategoryFilterGroupLabel(value);
             return value;
         }
 
@@ -2338,7 +2357,7 @@
                         if (col.key === 'snv_status') {
                             const labels = getSnvStatusLabels(row.snv_status);
                             if (!labels.some(l => filters.snv_status.has(l))) return false;
-                        } else if (col.key === 'test' || col.key === 'single_couple') {
+                        } else if (col.key === 'test' || col.key === 'single_couple' || col.key === 'category') {
                             const groupLabel = getFilterGroupLabel(col.key, row[col.key]);
                             if (!filters[col.key].has(groupLabel)) return false;
                         } else if (!filters[col.key].has(row[col.key])) {
