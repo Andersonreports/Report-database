@@ -2061,7 +2061,7 @@
                 });
 
                 return `
-                    <div class="filter-group">
+                    <div class="filter-group" id="filterGroup-${col.key}">
                         <label>${col.label} <span class="count">${values.length}</span></label>
                         <div class="multi-select" data-key="${col.key}">
                             <button class="multi-select-trigger" onclick="toggleDropdown('${col.key}')">
@@ -2090,6 +2090,24 @@
                     </div>
                 `;
             }).join('');
+            applyRunFilterVisibility();
+        }
+
+        // "Run" markers (e.g. "Run-46A") only occur in the BIOINFO REPORTS 2025
+        // sheets - Classified Reports has no concept of a run, so hide that
+        // filter (and drop any stale run selection) whenever Classified
+        // Reports is the only selected data source.
+        function applyRunFilterVisibility() {
+            const hideRunFilter = filters.source.size === 1 && filters.source.has('CLASSIFIED REPORTS');
+            const group = document.getElementById('filterGroup-run');
+            if (group) group.style.display = hideRunFilter ? 'none' : '';
+            if (hideRunFilter && filters.run.size > 0) {
+                filters.run.clear();
+                document.querySelectorAll('#options-run input[type="checkbox"]').forEach(cb => cb.checked = false);
+                const runTrigger = document.querySelector('.multi-select[data-key="run"] .trigger-text');
+                if (runTrigger) runTrigger.innerHTML = `<span class="placeholder">All</span>`;
+                renderActiveFilters();
+            }
         }
 
         function toggleDropdown(key) {
@@ -2142,6 +2160,7 @@
             trigger.innerHTML = filters[key].size > 0 ? `<span class="selected-count">${filters[key].size}</span> selected` : `<span class="placeholder">All</span>`;
             renderActiveFilters();
             if (key === 'sheet' || key === 'source') renderSheetTabs();
+            if (key === 'source') applyRunFilterVisibility();
         }
 
         function renderActiveFilters() {
