@@ -1854,9 +1854,35 @@
         // "Single" across years) - never written back to the sheet.
         function normalizeSingleCoupleTrio(value) {
             if (!value) return '';
-            const raw = String(value).trim();
+            const raw = String(value).trim().replace(/\s+/g, ' ');
             if (!raw) return '';
-            return raw.split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+            // Real values include compound forms like "Single - POC" / "Single - AF"
+            // (with inconsistent double-spacing across years) - split on the
+            // separator so each segment can be normalized independently instead
+            // of collapsing the whole string into one lowercase blob.
+            const KNOWN_ACRONYMS = new Set(['poc', 'af', 'dna', 'rna']);
+            const BASE_CANONICAL = ['Single', 'Couple', 'Trio'];
+
+            const parts = raw.split(/\s*-\s*/).filter(Boolean);
+
+            const formatted = parts.map((part, idx) => {
+                const lower = part.trim().toLowerCase();
+                if (KNOWN_ACRONYMS.has(lower)) return lower.toUpperCase();
+                if (idx === 0) {
+                    // Collapse casing/abbreviation variants ("COUPLE", "cou") of the
+                    // base Single/Couple/Trio term onto the same canonical label.
+                    for (const candidate of BASE_CANONICAL) {
+                        const candidateLower = candidate.toLowerCase();
+                        if (candidateLower === lower || (lower.length >= 2 && candidateLower.startsWith(lower))) {
+                            return candidate;
+                        }
+                    }
+                }
+                return lower.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            });
+
+            return formatted.join(' - ');
         }
 
         function normalizeTestName(value) {
