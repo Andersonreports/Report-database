@@ -2195,7 +2195,13 @@
                 'point mutations': 'Point Mutation',
                 'point mut': 'Point Mutation',
                 'mf and pp': 'MF AND PP',
-                'mfandpp': 'MF AND PP'
+                'mfandpp': 'MF AND PP',
+                // "FF AND PP" is shorthand for the same test some rows spell
+                // out in full ("Female Fertility And Polymorphism Panel") -
+                // canonicalize the abbreviation onto the full name so they
+                // merge into one option instead of two.
+                'ff and pp': 'Female Fertility And Polymorphism Panel',
+                'ffandpp': 'Female Fertility And Polymorphism Panel'
             };
 
             if (!mapping[normalized]) {
@@ -2293,7 +2299,8 @@
         const TEST_LABEL_ATOMIC = new Set([
             'RT-PCR', 'COVID PCR', 'NGS Panel', 'Panel Test',
             'Whole Genome Sequencing', 'Gene Panel', 'Pre PGT',
-            'Pre PGT Workup', 'Pre PGT PKD1', 'Point Mutation', 'MF AND PP'
+            'Pre PGT Workup', 'Pre PGT PKD1', 'Point Mutation', 'MF AND PP',
+            'Female Fertility And Polymorphism Panel'
         ]);
 
         // A sample can carry more than one test combined on the same row
