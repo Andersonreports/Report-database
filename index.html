@@ -2049,7 +2049,7 @@
             // Germline-Panel site. By far the largest single Unclassified bucket
             // (15+ records) once its own spelling variants ("Abnormaiities",
             // "Abnormaliities") are folded in.
-            { panel: 'Prenatal', keywords: ['prenatal', 'usg abnormalit', 'nasal bone', 'nuchal', 'polyhydramnios', 'single umbilical artery', 'retrognathia', 'intrauterine growth', 'iugr', 'intrauterine fetal demise', 'iufd', 'preeclampsia'] },
+            { panel: 'Prenatal', keywords: ['prenatal', 'usg abnormalit', 'nasal bone', 'nuchal', 'polyhydramnios', 'single umbilical artery', 'retrognathia', 'intrauterine growth', 'iugr', 'intrauterine fetal demise', 'iufd', 'preeclampsia', 'torch syndrome'] },
             { panel: 'Cancer', keywords: ['cancer', 'oncolog', 'tumour', 'tumor', 'carcinoma', 'malignan', 'lymphoma', 'leukemia', 'leukaemia', 'adenomatous polyposis', 'rhabdoid predisposition', 'beckwith-wiedemann'] },
             { panel: 'Diabetes', keywords: ['diabet', 'mody', 't1dm', 't2dm'] },
             // Liver, Lung: added from the lab's own Germline-Panel disease tables
@@ -2067,7 +2067,12 @@
             { panel: 'Endocrine', keywords: ['endocrine', 'endocrinolog', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon', 'pancreatitis', 'pheochromocytoma', 'obesity', 'addison', 'micropenis', 'short stature', 'reductase deficiency'] },
             { panel: 'Metabolic', keywords: ['metabolic', 'metabolism', 'mitochondrial', 'leigh', 'hemochromatosis', 'lysosomal storage', 'hypercholesterol', 'methylmalonic', 'mucopolysaccharid', 'sandhoff', 'hurler syndrome', 'dyslipidemia', 'hyperlipidemia', 'glutaric aciduria', 'porphyria', 'disorders of glycosylation'] },
             { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo', 'spherocytosis', 'platelet', 'hemophilia', 'polycythemia', 'hyperviscosity', 'methemoglobinemia'] },
-            { panel: 'Immune', keywords: ['immun', 'lymphadenopathy', 'rheumatolog', 'arthritis', 'mucocutaneous candidiasis', 'selective igm', 'griscelli', 'anaphylactic'] },
+            // "tuberculosis"/"varicella" here, not because the infection itself
+            // is genetic, but because unusually severe/recurrent infection
+            // (mycobacterial, viral) is a classic referral reason for primary
+            // immunodeficiency testing - same logic as the "TB"/"RTI" exact
+            // matches above.
+            { panel: 'Immune', keywords: ['immun', 'lymphadenopathy', 'rheumatolog', 'arthritis', 'mucocutaneous candidiasis', 'selective igm', 'griscelli', 'anaphylactic', 'tuberculosis', 'varicella'] },
             { panel: 'Ehlers-Danlos', keywords: ['ehlers', 'eds', 'connective'] },
             { panel: 'Skeletal', keywords: ['skeletal', 'dysplasia', 'osteo', 'talipes', 'ectrodactyly', 'exostoses', 'craniosynostosis', 'rhizomelia', 'orthopedic', 'binder', 'abnormal spine development', 'long bones', 'ellis-van creveld', 'spinal abnormalit'] },
             { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis', 'tuberous sclerosis', 'collodion', 'itching, dryness', 'hermansky-pudlak', 'melanoma'] },
