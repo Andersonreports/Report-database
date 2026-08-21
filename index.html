@@ -2086,9 +2086,27 @@
             return s.replace(/[’'`]/g, '');
         }
 
+        // Short abbreviations are unsafe as a *substring* keyword - 'tb' would
+        // also match inside unrelated words, 'rti' inside "arthritis", 'sle'
+        // inside "measles". Matching the ENTIRE (trimmed) category value
+        // instead of a substring removes that risk regardless of length,
+        // since it only fires when the value IS exactly the abbreviation.
+        // ASD is deliberately excluded - it has two unrelated common full
+        // forms (Atrial Septal Defect / Autism Spectrum Disorder) with no way
+        // to tell which applies from the abbreviation alone.
+        const PANEL_EXACT_MATCHES = {
+            'tb': 'Immune',               // Tuberculosis - referral reason is usually mycobacterial-disease susceptibility (a PID workup), not the infection itself
+            'sle': 'Immune',              // Systemic Lupus Erythematosus
+            'rti': 'Immune',              // Respiratory Tract Infection - recurrent infections is a classic PID referral
+            'shtn': 'Heart',              // Systemic HyperTensioN
+            'uro': 'Renal / Nephrology',  // Urology
+            'endo': 'Endocrine'           // Endocrinology
+        };
+
         function classifyPanel(category) {
             if (!category) return '';
-            const lower = stripApostrophes(String(category).toLowerCase());
+            const lower = stripApostrophes(String(category).toLowerCase()).trim();
+            if (PANEL_EXACT_MATCHES[lower]) return PANEL_EXACT_MATCHES[lower];
             for (const { panel, keywords } of PANEL_KEYWORDS) {
                 if (keywords.some(kw => lower.includes(stripApostrophes(kw)))) return panel;
             }
