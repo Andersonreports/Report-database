@@ -2380,13 +2380,13 @@
         }
 
         // Classified Reports only has meaningful Test/Category/Single-Couple-Trio/
-        // SNV Status/Sheet(Year) data - Run, Sample Type, Status, and Report
+        // SNV Status/Sheet(Year)/Report Status data - Run, Sample Type, and
         // Status are either empty or not applicable for that sheet, so the
         // Advanced Filters panel is scoped down to just these (plus the
         // always-visible search bar and the always-visible Data Source row)
         // whenever Classified Reports is the only selected data source.
         // BIOINFO REPORTS 2025 (or "All Sources") keeps every filter, unaffected.
-        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'panel', 'single_couple', 'snv_status', 'sheet']);
+        const CLASSIFIED_REPORTS_ONLY_FILTER_KEYS = new Set(['test', 'category', 'panel', 'single_couple', 'snv_status', 'sheet', 'report_status']);
 
         // Match case-insensitively and by substring - the configured source
         // name is whatever was typed into Settings ("Classified Reports",
