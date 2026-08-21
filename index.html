@@ -2045,19 +2045,27 @@
             { panel: 'Fertility', keywords: ['fertility', 'fertllity', 'miscarriage', 'infertil', 'pregnancy loss', 'product of conception', 'poc', 'reproductive', 'oocyte', 'rpl', 'obstetric'] },
             { panel: 'Cancer', keywords: ['cancer', 'oncolog', 'tumour', 'tumor', 'carcinoma', 'malignan', 'lymphoma', 'leukemia', 'leukaemia'] },
             { panel: 'Diabetes', keywords: ['diabet', 'mody', 't1dm', 't2dm'] },
-            { panel: 'Endocrine', keywords: ['endocrine', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon'] },
-            { panel: 'Metabolic', keywords: ['metabolic', 'metabolism', 'wilson disease', "wilson's disease", 'mitochondrial', 'leigh', 'hemochromatosis'] },
-            { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo', 'spherocytosis'] },
+            // Liver, Lung: added from the lab's own Germline-Panel disease tables
+            // (liver.html / lung.html) - e.g. Wilson's disease, hemochromatosis-
+            // adjacent hyperbilirubinemia/jaundice, and glycogen storage are
+            // catalogued there as Liver, not Metabolic; Respiratory Distress/
+            // Kartagener are catalogued as Lung, a panel this taxonomy didn't
+            // previously have a bucket for at all.
+            { panel: 'Liver', keywords: ["wilson disease", "wilson's disease", 'hyperbilirubinemia', 'jaundice', 'hepatic', 'glycogen storage', 'cholestasis', 'gilbert syndrome', 'liver'] },
+            { panel: 'Lung', keywords: ['respiratory', 'lung', 'kartagener', 'bronchiectasis', 'pulmonary'] },
+            { panel: 'Endocrine', keywords: ['endocrine', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon', 'pancreatitis', 'pheochromocytoma', 'obesity'] },
+            { panel: 'Metabolic', keywords: ['metabolic', 'metabolism', 'mitochondrial', 'leigh', 'hemochromatosis', 'lysosomal storage', 'hypercholesterol'] },
+            { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo', 'spherocytosis', 'platelet'] },
             { panel: 'Immune', keywords: ['immun', 'lymphadenopathy'] },
             { panel: 'Ehlers-Danlos', keywords: ['ehlers', 'eds'] },
             { panel: 'Skeletal', keywords: ['skeletal', 'dysplasia', 'osteo', 'talipes'] },
-            { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis'] },
+            { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis', 'tuberous sclerosis'] },
             { panel: 'Eye', keywords: ['ophthalm', 'retin', 'cataract', 'eye'] },
             { panel: 'Ear', keywords: ['audit', 'hearing', 'deaf', 'ear'] },
-            { panel: 'Renal / Nephrology', keywords: ['renal', 'kidney', 'cakut', 'pkd', 'urinary', 'nephro'] },
-            { panel: 'Heart', keywords: ['cardiac', 'cardio', 'heart', 'hypertens', 'arrhythmia'] },
+            { panel: 'Renal / Nephrology', keywords: ['renal', 'kidney', 'cakut', 'pkd', 'urinary', 'nephro', 'bartter'] },
+            { panel: 'Heart', keywords: ['cardiac', 'cardio', 'heart', 'hypertens', 'arrhythmia', 'noonan', 'marfan', 'situs inversus', 'tetralogy'] },
             { panel: 'Muscular', keywords: ['muscular dystrophy', 'muscul', 'myopath', 'muscle'] },
-            { panel: 'Neuro', keywords: ['neuro', 'seizure', 'epilep', 'cerebral', 'developmental delay', 'ataxia', 'dystonia', 'leukodystrophy', 'encephal', 'intellectual disab', 'autism', 'speech delay', 'rett syndrome'] }
+            { panel: 'Neuro', keywords: ['neuro', 'seizure', 'epilep', 'cerebral', 'developmental delay', 'ataxia', 'dystonia', 'leukodystrophy', 'encephal', 'intellectual disab', 'autism', 'speech delay', 'rett syndrome', 'parkinson'] }
         ];
 
         function classifyPanel(category) {
