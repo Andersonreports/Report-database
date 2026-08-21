@@ -1796,6 +1796,8 @@
                 let allSheets = {};
                 let loadedCount = 0;
 
+                const failedSources = [];
+
                 for (const api of enabledUrls) {
                     try {
                         syncText.textContent = `Loading ${api.name}...`;
@@ -1813,9 +1815,12 @@
                             }));
                             combinedData = combinedData.concat(sourceData);
                             loadedCount++;
+                        } else {
+                            failedSources.push(api.name);
                         }
                     } catch (e) {
                         console.error(`Error loading ${api.name}:`, e);
+                        failedSources.push(api.name);
                     }
                 }
 
@@ -1824,8 +1829,17 @@
                 }
 
                 parseJSONData({ success: true, data: combinedData, sheets: allSheets });
-                syncDot.className = 'sync-dot';
-                syncText.textContent = `Synced ${loadedCount} source${loadedCount > 1 ? 's' : ''} - ${new Date().toLocaleTimeString()}`;
+                // A source failing to load (network blip, slow Apps Script
+                // response) used to look identical to a normal successful
+                // sync, since the other source's data still rendered fine -
+                // surface it instead of failing silently.
+                if (failedSources.length > 0) {
+                    syncDot.className = 'sync-dot error';
+                    syncText.textContent = `Partial sync - ${failedSources.join(', ')} failed to load - ${new Date().toLocaleTimeString()}`;
+                } else {
+                    syncDot.className = 'sync-dot';
+                    syncText.textContent = `Synced ${loadedCount} source${loadedCount > 1 ? 's' : ''} - ${new Date().toLocaleTimeString()}`;
+                }
             } catch (error) {
                 console.error('Load error:', error);
                 showError('Failed: ' + error.message);
@@ -2209,7 +2223,19 @@
                 'ffandpp': 'Female Fertility And Polymorphism Panel',
                 // Truncated last letter on a small number of rows.
                 'female infertility ngs pane': 'Female Infertility NGS Panel',
-                'male infertility ngs pane': 'Male Infertility NGS Panel'
+                'male infertility ngs pane': 'Male Infertility NGS Panel',
+                // Incomplete shorthand for the same test on a couple of rows.
+                'female infertility': 'Female Infertility NGS Panel',
+                // Same POC/Abortus WES test, one row just spells the test
+                // name out in full instead of using "WES".
+                'poc abortus whole exome sequencing 16 marker mcc as per acmg guidelines': 'Poc Abortus Wes',
+                // These are all WES with varying amounts of descriptive
+                // detail about the same test, not distinct tests - confirmed
+                // by the user against their own test catalog.
+                'wes 16 marker mcc as per acmg guidelines': 'WES',
+                'whole exome sequencing 16 marker mcc as per acmg guidelines': 'WES',
+                'whole exome sequencing mitochondrial genome sequencing': 'WES',
+                'whole exome sequencing covering all the coding regions 23 000 genes': 'WES'
             };
 
             if (!mapping[normalized]) {
