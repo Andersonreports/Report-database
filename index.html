@@ -2316,17 +2316,36 @@
         // normalizeTestName's exact "ces" -> "CES" mapping since the whole
         // phrase isn't just "ces"), so it doesn't end up as a second,
         // differently-cased option alongside standalone "CES".
+        //
+        // Splitting on every word was too aggressive - long, free-text test
+        // descriptions ("SCN1A- NGS Sequencing Analysis", "POC / Abortus -
+        // WES", "Chromosomal Microarray Analysis") aren't two combined
+        // tests, they're one test with a descriptive name, and word-split
+        // was throwing off junk options like "Analysis", "Abortus", "And",
+        // "16", "Acmg", "Alpha" - fragments of those descriptions, not real
+        // tests. Only split when EVERY resulting piece is a recognized
+        // short test-code fragment; otherwise treat the whole value as one
+        // atomic option.
+        const TEST_COMPONENT_CANONICAL = {
+            ces: 'CES', cesa: 'CES', wes: 'WES', wesa: 'WES', wgs: 'WGS',
+            ngs: 'NGS', wmgs: 'WMGS', bcsa: 'BCSA', trio: 'Trio',
+            revised: 'Revised', pcr: 'PCR'
+        };
+
         function canonicalizeTestComponent(component) {
-            const lower = component.toLowerCase();
-            if (lower === 'ces' || lower === 'cesa') return 'CES';
-            return component;
+            return TEST_COMPONENT_CANONICAL[component.toLowerCase()] || component;
         }
 
         function getTestFilterGroupLabels(value) {
             const label = getTestFilterGroupLabel(value);
             if (!label) return [];
             if (TEST_LABEL_ATOMIC.has(label)) return [label];
-            return label.split(/\s*\+\s*|\s+/).map(s => canonicalizeTestComponent(s.trim())).filter(Boolean);
+            const parts = label.split(/\s*\+\s*|\s+/).map(s => s.trim()).filter(Boolean);
+            if (parts.length === 1) return [canonicalizeTestComponent(parts[0])];
+            if (parts.every(p => TEST_COMPONENT_CANONICAL.hasOwnProperty(p.toLowerCase()))) {
+                return parts.map(canonicalizeTestComponent);
+            }
+            return [label];
         }
 
         function getEditDistance(a, b) {
