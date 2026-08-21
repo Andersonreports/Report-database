@@ -1690,6 +1690,30 @@
             const addKey = key => { if (!seen.has(key)) { seen.add(key); orderedKeys.push(key); } };
 
             if (rawRows && rawRows.length) {
+                // Different sheet years/month-blocks can have their columns
+                // in a genuinely different physical order (confirmed: even
+                // within a single source, several distinct layouts exist
+                // across time) - so scanning every row and taking whichever
+                // key is seen first produces an unstable, shuffled-looking
+                // order that depends on which rows happen to be scanned
+                // first. Instead, use whichever exact column layout is most
+                // common across all loaded rows (i.e. today's standard
+                // layout) as the base order, then append any additional
+                // keys unique to rarer/older layouts at the end so nothing
+                // is silently dropped.
+                const signatureCounts = new Map();
+                rawRows.forEach(row => {
+                    const keys = Object.keys(row);
+                    const sig = keys.join('|');
+                    if (!signatureCounts.has(sig)) signatureCounts.set(sig, { count: 0, keys });
+                    signatureCounts.get(sig).count++;
+                });
+                let dominant = null;
+                signatureCounts.forEach(v => { if (!dominant || v.count > dominant.count) dominant = v; });
+                dominant.keys.forEach(rawKey => {
+                    if (RAW_KEY_EXCLUDE_FROM_ORDER.has(rawKey)) return;
+                    addKey(RAW_KEY_TO_FINAL_KEY[rawKey] || rawKey);
+                });
                 rawRows.forEach(row => Object.keys(row).forEach(rawKey => {
                     if (RAW_KEY_EXCLUDE_FROM_ORDER.has(rawKey)) return;
                     addKey(RAW_KEY_TO_FINAL_KEY[rawKey] || rawKey);
@@ -2237,6 +2261,9 @@
             // a misaligned cell somewhere - so it's excluded as a filter
             // option rather than shown as if it were a legitimate test.
             if (/^\d+$/.test(raw)) return '';
+            // Same for an Anderson ID ("AND25370010795") that landed in this
+            // column on a misaligned row.
+            if (/^AND[0-9A-Z]{6,}$/i.test(raw)) return '';
             const normalized = raw.toLowerCase()
                 .replace(/[-_]/g, ' ')
                 .replace(/[^a-z0-9 ]+/g, ' ')
@@ -2315,11 +2342,19 @@
             const raw = String(value || '').trim();
             if (!raw) return '';
             const base = raw.split(' - ')[0].trim();
+            // Compare case-insensitively - the sheet mixes "Single"/"SINGLE"/
+            // "single" freely (majority of rows are actually all-caps or
+            // all-lowercase, not the exact "Single" casing), so a
+            // case-sensitive check was silently excluding most real rows
+            // from this filter entirely.
+            const lower = base.toLowerCase();
             // Only these three are real classifications for this filter - stray
             // data (a category value that landed in this column on a
             // misaligned row, e.g. "Fertility", "Muscular Dystrophy.") isn't a
             // Single/Couple/Trio value and shouldn't appear as an option here.
-            if (base === 'Single' || base === 'Couple' || base === 'Trio') return base;
+            if (lower === 'single') return 'Single';
+            if (lower === 'couple') return 'Couple';
+            if (lower === 'trio') return 'Trio';
             return '';
         }
 
@@ -2343,6 +2378,23 @@
             // that landed in this column on some row - so it's excluded as a
             // filter option, same as the bare-numeric Test exclusion above.
             if (/^\d{1,2}[-./]\d{1,2}[-./]\d{2,4}$/.test(raw)) return '';
+            // Same for an Anderson ID that landed in this column.
+            if (/^AND[0-9A-Z]{6,}$/i.test(raw)) return '';
+            return raw;
+        }
+
+        // Sample Type is a specimen type ("Blood", "Amniotic Fluid", ...) -
+        // a stray date or free-text word from a misaligned row (e.g.
+        // "jaundice", which is a symptom, not a specimen) isn't a real
+        // option here.
+        const SAMPLE_TYPE_INVALID_VALUES = new Set(['jaundice']);
+
+        function getSampleTypeFilterGroupLabel(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            if (SAMPLE_TYPE_INVALID_VALUES.has(raw.toLowerCase())) return '';
+            if (/^\d{1,2}[-./]\d{1,2}[-./]\d{2,4}$/.test(raw)) return '';
+            if (/^AND[0-9A-Z]{6,}$/i.test(raw)) return '';
             return raw;
         }
 
@@ -2350,6 +2402,7 @@
             if (key === 'test') return getTestFilterGroupLabel(value);
             if (key === 'single_couple') return getSingleCoupleTrioFilterGroupLabel(value);
             if (key === 'category') return getCategoryFilterGroupLabel(value);
+            if (key === 'sample_type') return getSampleTypeFilterGroupLabel(value);
             return value;
         }
 
