@@ -2301,11 +2301,25 @@
         // components so selecting one test (say "CESA") also surfaces rows
         // where it was run alongside another test, not only rows with that
         // exact single-test value. Mirrors the snv_status combo fix below.
+        // "Cesa" is a typo for "CES", not a separate test - fold it onto the
+        // same component (whether standalone or combined with another test,
+        // e.g. "Cesa Wmgs") so both count under one "CES" filter option.
+        // Also catches the plain "Ces" title-case spelling that comes out of
+        // combo values like "CES Revised"/"CES WMGS" (those never hit
+        // normalizeTestName's exact "ces" -> "CES" mapping since the whole
+        // phrase isn't just "ces"), so it doesn't end up as a second,
+        // differently-cased option alongside standalone "CES".
+        function canonicalizeTestComponent(component) {
+            const lower = component.toLowerCase();
+            if (lower === 'ces' || lower === 'cesa') return 'CES';
+            return component;
+        }
+
         function getTestFilterGroupLabels(value) {
             const label = getTestFilterGroupLabel(value);
             if (!label) return [];
             if (TEST_LABEL_ATOMIC.has(label)) return [label];
-            return label.split(/\s*\+\s*|\s+/).map(s => s.trim()).filter(Boolean);
+            return label.split(/\s*\+\s*|\s+/).map(s => canonicalizeTestComponent(s.trim())).filter(Boolean);
         }
 
         function getEditDistance(a, b) {
