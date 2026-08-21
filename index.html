@@ -2338,6 +2338,11 @@
             const raw = String(value || '').trim();
             if (!raw) return '';
             if (CATEGORY_INVALID_VALUES.has(raw.toLowerCase())) return '';
+            // A stray date ("10-04-2025", "10.04.2025", "10/04/2025") isn't a
+            // real category - it's a misaligned Report Release Date value
+            // that landed in this column on some row - so it's excluded as a
+            // filter option, same as the bare-numeric Test exclusion above.
+            if (/^\d{1,2}[-./]\d{1,2}[-./]\d{2,4}$/.test(raw)) return '';
             return raw;
         }
 
