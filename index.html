@@ -2248,6 +2248,33 @@
             return raw;
         }
 
+        // Canonical test names that happen to have more than one word - never
+        // split these into pieces, or e.g. "COVID PCR" would wrongly also
+        // match a filter click on plain "PCR", and "NGS Panel" would wrongly
+        // match plain "Panel". Everything NOT in this set reached its label
+        // via the generic fallback in normalizeTestName (i.e. it wasn't
+        // recognized as one single known test), so for those, each word is
+        // itself a real distinct test that was combined with another one on
+        // that row (e.g. "CESA WMGS" = the CESA test + the WMGS test) and
+        // should be split into its components.
+        const TEST_LABEL_ATOMIC = new Set([
+            'RT-PCR', 'COVID PCR', 'NGS Panel', 'Panel Test',
+            'Whole Genome Sequencing', 'Gene Panel', 'Pre PGT',
+            'Pre PGT Workup', 'Pre PGT PKD1', 'Point Mutation', 'MF AND PP'
+        ]);
+
+        // A sample can carry more than one test combined on the same row
+        // (e.g. "CESA WMGS", "WES + WMGS") - split it into its individual
+        // components so selecting one test (say "CESA") also surfaces rows
+        // where it was run alongside another test, not only rows with that
+        // exact single-test value. Mirrors the snv_status combo fix below.
+        function getTestFilterGroupLabels(value) {
+            const label = getTestFilterGroupLabel(value);
+            if (!label) return [];
+            if (TEST_LABEL_ATOMIC.has(label)) return [label];
+            return label.split(/\s*\+\s*|\s+/).map(s => s.trim()).filter(Boolean);
+        }
+
         function getEditDistance(a, b) {
             const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
             for (let i = 0; i <= a.length; i++) dp[i][0] = i;
@@ -2326,6 +2353,13 @@
                 values = [...labelSet].sort();
                 values.forEach(v => {
                     counts[v] = allData.filter(d => getSnvStatusLabels(d.snv_status).includes(v)).length;
+                });
+            } else if (col.key === 'test') {
+                const labelSet = new Set();
+                allData.forEach(d => getTestFilterGroupLabels(d.test).forEach(l => labelSet.add(l)));
+                values = [...labelSet].sort();
+                values.forEach(v => {
+                    counts[v] = allData.filter(d => getTestFilterGroupLabels(d.test).includes(v)).length;
                 });
             } else {
                 const rawValues = [...new Set(allData.map(d => d[col.key]).filter(Boolean))].sort();
@@ -2503,7 +2537,10 @@
                         if (col.key === 'snv_status') {
                             const labels = getSnvStatusLabels(row.snv_status);
                             if (!labels.some(l => filters.snv_status.has(l))) return false;
-                        } else if (col.key === 'test' || col.key === 'single_couple' || col.key === 'category') {
+                        } else if (col.key === 'test') {
+                            const labels = getTestFilterGroupLabels(row.test);
+                            if (!labels.some(l => filters.test.has(l))) return false;
+                        } else if (col.key === 'single_couple' || col.key === 'category') {
                             const groupLabel = getFilterGroupLabel(col.key, row[col.key]);
                             if (!filters[col.key].has(groupLabel)) return false;
                         } else if (!filters[col.key].has(row[col.key])) {
