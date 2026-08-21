@@ -1947,10 +1947,15 @@
                 'Amniotic Fluid', 'Blood Product', 'Blood Amniotic Fluid'
             ];
 
+            // Exact match only - a loose includes() here was letting a more
+            // specific specimen description ("DNA (fetal skin tissue)")
+            // collapse into the bare canonical word ("DNA"), discarding the
+            // detail. The edit-distance fallback right below still catches
+            // genuine near-matches/typos.
             const normalizedCompact = normalized.replace(/\s+/g, '');
             for (const candidate of canonical) {
                 const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
-                if (normalizedCompact === candidateCompact || normalizedCompact.includes(candidateCompact) || candidateCompact.includes(normalizedCompact)) {
+                if (normalizedCompact === candidateCompact) {
                     return candidate;
                 }
             }
@@ -2201,7 +2206,10 @@
                 // canonicalize the abbreviation onto the full name so they
                 // merge into one option instead of two.
                 'ff and pp': 'Female Fertility And Polymorphism Panel',
-                'ffandpp': 'Female Fertility And Polymorphism Panel'
+                'ffandpp': 'Female Fertility And Polymorphism Panel',
+                // Truncated last letter on a small number of rows.
+                'female infertility ngs pane': 'Female Infertility NGS Panel',
+                'male infertility ngs pane': 'Male Infertility NGS Panel'
             };
 
             if (!mapping[normalized]) {
@@ -2233,10 +2241,18 @@
                 'Genotyping', 'Antibody', 'Serology', 'Panel Test', 'Whole Genome Sequencing', 'Gene Panel'
             ];
 
+            // Exact match only - NOT a substring/includes check. A loose
+            // includes() here was letting any long, specific test
+            // description that merely contains a short canonical word
+            // ("Hereditary Cancer Gene Panel", "SCN1A- NGS Sequencing
+            // Analysis") collapse into that generic bucket ("Gene Panel",
+            // "NGS"), silently discarding which specific test/gene/panel it
+            // actually was. The edit-distance fallback right below already
+            // catches genuine near-matches (typos, minor punctuation).
             const normalizedCompact = normalized.replace(/\s+/g, '');
             for (const candidate of canonical) {
                 const candidateCompact = candidate.toLowerCase().replace(/\s+/g, '');
-                if (normalizedCompact === candidateCompact || normalizedCompact.includes(candidateCompact) || candidateCompact.includes(normalizedCompact)) {
+                if (normalizedCompact === candidateCompact) {
                     return candidate;
                 }
             }
