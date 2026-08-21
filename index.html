@@ -2042,8 +2042,15 @@
         // "chronic kidney disease" cases. Anything matching no keyword is
         // "Unclassified" rather than guessed.
         const PANEL_KEYWORDS = [
-            { panel: 'Fertility', keywords: ['fertility', 'fertllity', 'miscarriage', 'infertil', 'pregnancy loss', 'product of conception', 'poc', 'reproductive', 'oocyte', 'rpl', 'obstetric'] },
-            { panel: 'Cancer', keywords: ['cancer', 'oncolog', 'tumour', 'tumor', 'carcinoma', 'malignan', 'lymphoma', 'leukemia', 'leukaemia'] },
+            { panel: 'Fertility', keywords: ['fertility', 'fertllity', 'miscarr', 'infertil', 'pregnancy loss', 'product of conception', 'poc', 'reproductive', 'oocyte', 'rpl', 'obstetric', 'ectopic pregnancy', 'empty follicle', 'ivf failure', 'missed abortion', 'premature ovarian failure', 'amenorrhea', 'testicular failure', 'cephalopelvic', 'hypogonadotropic hypogonadism', 'mayer-rokitansky', 'evan syndrome', 'pcod', 'pcos'] },
+            // Prenatal: ultrasound-finding referrals (fetal anomaly workups), a
+            // distinct workflow from Fertility/infertility - matches this lab's
+            // own separate "Prenatal genetic panel" card (prenatal.html) on the
+            // Germline-Panel site. By far the largest single Unclassified bucket
+            // (15+ records) once its own spelling variants ("Abnormaiities",
+            // "Abnormaliities") are folded in.
+            { panel: 'Prenatal', keywords: ['prenatal', 'usg abnormalit', 'nasal bone', 'nuchal', 'polyhydramnios', 'single umbilical artery', 'retrognathia', 'intrauterine growth', 'iugr', 'intrauterine fetal demise', 'iufd', 'preeclampsia'] },
+            { panel: 'Cancer', keywords: ['cancer', 'oncolog', 'tumour', 'tumor', 'carcinoma', 'malignan', 'lymphoma', 'leukemia', 'leukaemia', 'adenomatous polyposis', 'rhabdoid predisposition', 'beckwith-wiedemann'] },
             { panel: 'Diabetes', keywords: ['diabet', 'mody', 't1dm', 't2dm'] },
             // Liver, Lung: added from the lab's own Germline-Panel disease tables
             // (liver.html / lung.html) - e.g. Wilson's disease, hemochromatosis-
@@ -2051,21 +2058,25 @@
             // catalogued there as Liver, not Metabolic; Respiratory Distress/
             // Kartagener are catalogued as Lung, a panel this taxonomy didn't
             // previously have a bucket for at all.
-            { panel: 'Liver', keywords: ["wilson disease", "wilson's disease", 'hyperbilirubinemia', 'jaundice', 'hepatic', 'glycogen storage', 'cholestasis', 'gilbert syndrome', 'liver'] },
-            { panel: 'Lung', keywords: ['respiratory', 'lung', 'kartagener', 'bronchiectasis', 'pulmonary'] },
-            { panel: 'Endocrine', keywords: ['endocrine', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon', 'pancreatitis', 'pheochromocytoma', 'obesity'] },
-            { panel: 'Metabolic', keywords: ['metabolic', 'metabolism', 'mitochondrial', 'leigh', 'hemochromatosis', 'lysosomal storage', 'hypercholesterol'] },
-            { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo', 'spherocytosis', 'platelet'] },
-            { panel: 'Immune', keywords: ['immun', 'lymphadenopathy'] },
-            { panel: 'Ehlers-Danlos', keywords: ['ehlers', 'eds'] },
-            { panel: 'Skeletal', keywords: ['skeletal', 'dysplasia', 'osteo', 'talipes'] },
-            { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis', 'tuberous sclerosis'] },
-            { panel: 'Eye', keywords: ['ophthalm', 'retin', 'cataract', 'eye'] },
-            { panel: 'Ear', keywords: ['audit', 'hearing', 'deaf', 'ear'] },
-            { panel: 'Renal / Nephrology', keywords: ['renal', 'kidney', 'cakut', 'pkd', 'urinary', 'nephro', 'bartter'] },
-            { panel: 'Heart', keywords: ['cardiac', 'cardio', 'heart', 'hypertens', 'arrhythmia', 'noonan', 'marfan', 'situs inversus', 'tetralogy'] },
-            { panel: 'Muscular', keywords: ['muscular dystrophy', 'muscul', 'myopath', 'muscle'] },
-            { panel: 'Neuro', keywords: ['neuro', 'seizure', 'epilep', 'cerebral', 'developmental delay', 'ataxia', 'dystonia', 'leukodystrophy', 'encephal', 'intellectual disab', 'autism', 'speech delay', 'rett syndrome', 'parkinson'] }
+            // "wilson"/"gilbert" bare rather than the full phrase - the sheet
+            // uses a typographic apostrophe (’) in "Wilson's"/"Gilbert's" that
+            // doesn't match a plain ' in a keyword, so matching on the surname
+            // alone sidesteps that encoding mismatch entirely.
+            { panel: 'Liver', keywords: ['wilson', 'gilbert', 'crigler-najjar', 'hyperbilirubinemia', 'jaundice', 'hepatic', 'glycogen storage', 'cholestasis', 'hypoglycemia', 'liver'] },
+            { panel: 'Lung', keywords: ['respiratory', 'lung', 'kartagener', 'bronchiectasis', 'pulmonary', 'pulmo', 'plumo', 'broncho pneumonia', 'laryngomalacia', 'aspirated meconium', 'surfactant deficiency', 'hyperventilation'] },
+            { panel: 'Endocrine', keywords: ['endocrine', 'endocrinolog', 'thyroid', 'parathyroid', 'pituitary', 'adrenal', 'hormon', 'pancreatitis', 'pheochromocytoma', 'obesity', 'addison', 'micropenis', 'short stature', 'reductase deficiency'] },
+            { panel: 'Metabolic', keywords: ['metabolic', 'metabolism', 'mitochondrial', 'leigh', 'hemochromatosis', 'lysosomal storage', 'hypercholesterol', 'methylmalonic', 'mucopolysaccharid', 'sandhoff', 'hurler syndrome', 'dyslipidemia', 'hyperlipidemia', 'glutaric aciduria', 'porphyria', 'disorders of glycosylation'] },
+            { panel: 'Hematology', keywords: ['hemat', 'haemat', 'anemia', 'anaemia', 'thalassemia', 'thalassaemia', 'thrombo', 'spherocytosis', 'platelet', 'hemophilia', 'polycythemia', 'hyperviscosity', 'methemoglobinemia'] },
+            { panel: 'Immune', keywords: ['immun', 'lymphadenopathy', 'rheumatolog', 'arthritis', 'mucocutaneous candidiasis', 'selective igm', 'griscelli', 'anaphylactic'] },
+            { panel: 'Ehlers-Danlos', keywords: ['ehlers', 'eds', 'connective'] },
+            { panel: 'Skeletal', keywords: ['skeletal', 'dysplasia', 'osteo', 'talipes', 'ectrodactyly', 'exostoses', 'craniosynostosis', 'rhizomelia', 'orthopedic', 'binder', 'abnormal spine development', 'long bones', 'ellis-van creveld', 'spinal abnormalit'] },
+            { panel: 'Skin', keywords: ['skin', 'dermat', 'albinism', 'epidermolysis', 'ichthyosis', 'tuberous sclerosis', 'collodion', 'itching, dryness', 'hermansky-pudlak', 'melanoma'] },
+            { panel: 'Eye', keywords: ['ophthalm', 'retin', 'cataract', 'eye', 'leucomatous', 'night vision', 'ocular', 'blind', 'proptosis', 'vision'] },
+            { panel: 'Ear', keywords: ['audit', 'hearing', 'deaf', 'ear', 'otorhinolary'] },
+            { panel: 'Renal / Nephrology', keywords: ['renal', 'kidney', 'cakut', 'pkd', 'urinary', 'nephro', 'bartter', 'ckd', 'urolog', 'urolithiasis', 'glomeruloscleros', 'srns', 'proximal rta', 'alport', 'gitelman', 'joubert'] },
+            { panel: 'Heart', keywords: ['cardiac', 'cardio', 'cardia', 'heart', 'hypertens', 'arrhythmia', 'noonan', 'marfan', 'situs inversus', 'tetralogy', 'bicuspid aortic', 'aortic regurgitation', 'myocardial infarction', 'lv hypertrophy', 'long qt', 'brugada'] },
+            { panel: 'Muscular', keywords: ['muscular dystrophy', 'muscul', 'myopath', 'muscle', 'musucular', 'gower', 'creatine phosphokinase', 'rhabdomyolysis', 'myositis', 'arthrogryposis', 'myasthenia gravis', 'joint contracture', 'proximal weakness'] },
+            { panel: 'Neuro', keywords: ['neuro', 'seizure', 'epilep', 'cerebral', 'developmental delay', 'ataxia', 'dystonia', 'leukodystrophy', 'encephal', 'intellectual disab', 'autism', 'autistic', 'speech delay', 'rett syndrome', 'parkinson', 'adhd', 'hyperactivity disorder', 'fragile x', 'schizophrenia', 'name calling', 'hemiparesis', 'hemiplegia', 'cerebellar atrophy', 'spinocerebellar', 'macrocephaly', 'microcephaly', 'stroke', 'delayed milestone', 'delay in motor', 'delayed motor development', 'psychomotor delay', 'choreoacanthocytosis', 'spina bifida', 'callosal agenesis', 'psychiatry', 'psychological', 'seckel syndrome', 'mobius', 'spastic', 'flexor spasms', 'tics', 'mcm/mpph', 'polymicrogyria'] }
         ];
 
         function classifyPanel(category) {
