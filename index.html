@@ -1828,7 +1828,7 @@
             allData = (json.data || []).map(row => {
                 const category = normalizeCategory(row.category || '');
                 const record = {
-                    no: row.no || row['no.'] || '',
+                    no: row.no || row['no.'] || row.sno || row.s_no || row.no_ || '',
                     sample_name: row.sample_name || row['sample_name'] || '',
                     gen_id: row.gen_id || row['gen_id'] || '',
                     anderson_id: row.anderson_id || row['anderson_id'] || '',
