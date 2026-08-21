@@ -2625,9 +2625,16 @@
             'sample_type', 'remarks', 'status', 'gen_id', 'project_file', 'raw_data_location', 'snv_status', 'run'
         ]);
 
+        // Project File is always empty (shows only "-") on BIOINFO REPORTS
+        // 2025 too, and Classified Reports doesn't have that column at all -
+        // so unlike the source-scoped set above, this one drops it from the
+        // table regardless of which data source is selected.
+        const ALWAYS_HIDDEN_TABLE_COLUMNS = new Set(['project_file']);
+
         function getVisibleTableColumns() {
-            if (!isClassifiedReportsOnly()) return TABLE_COLUMNS;
-            return TABLE_COLUMNS.filter(c => !TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED.has(c.key));
+            const base = TABLE_COLUMNS.filter(c => !ALWAYS_HIDDEN_TABLE_COLUMNS.has(c.key));
+            if (!isClassifiedReportsOnly()) return base;
+            return base.filter(c => !TABLE_COLUMNS_HIDDEN_FOR_CLASSIFIED.has(c.key));
         }
 
         function renderTableHead() {
