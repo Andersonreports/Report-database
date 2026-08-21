@@ -478,6 +478,64 @@ function clearCache() {
   CacheService.getScriptCache().removeAll([]);
 }
 
+/**
+ * ONE-TIME bulk permission change: sets every linked report PDF (the
+ * hyperlink on each row's Report Release Date cell) to "Anyone with the
+ * link can view". Run manually from the Apps Script editor - it is NOT
+ * exposed through doGet, since it mutates sharing settings and should
+ * only ever be triggered deliberately.
+ *
+ * PRIVACY NOTE: this makes every linked report accessible to anyone who
+ * obtains the link (not indexed/searchable, but not private either).
+ * These are real patient genetic test reports - only run this if that
+ * trade-off is acceptable. The first run will prompt for an additional
+ * Drive authorization scope, since the script has so far only touched
+ * the Sheet.
+ */
+function bulkShareAllReportLinks() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const fileIds = new Set();
+
+  ss.getSheets().forEach(function (sheet) {
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < 1 || lastCol < 1) return;
+    const range = sheet.getRange(1, 1, lastRow, lastCol);
+    const data = range.getValues();
+    let richTextValues = null;
+    try { richTextValues = range.getRichTextValues(); } catch (e) { }
+    let formulas = null;
+    try { formulas = range.getFormulas(); } catch (e) { }
+    const linkGrid = getHyperlinkGrid(ss.getId(), sheet.getName(), lastRow, lastCol);
+
+    for (let i = 0; i < data.length; i++) {
+      for (let j = 0; j < data[i].length; j++) {
+        const text = String(data[i][j] == null ? '' : data[i][j]).trim();
+        const link = getCellLink(linkGrid, richTextValues, formulas, i, j, text);
+        if (link) {
+          const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (m) fileIds.add(m[1]);
+        }
+      }
+    }
+  });
+
+  Logger.log('Found ' + fileIds.size + ' unique linked files.');
+
+  let updated = 0, failed = 0;
+  fileIds.forEach(function (id) {
+    try {
+      DriveApp.getFileById(id).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      updated++;
+    } catch (e) {
+      failed++;
+      Logger.log('Failed for ' + id + ': ' + e);
+    }
+  });
+
+  Logger.log('Updated: ' + updated + ', Failed: ' + failed);
+}
+
 function testDoGet() {
   const result = doGet({ parameter: { debug: '1' } });
   Logger.log(result.getContent().substring(0, 5000));
