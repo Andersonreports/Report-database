@@ -2245,6 +2245,12 @@
 
             if (normalized.includes('pre pgt')) return 'Pre PGT';
             if (normalized.includes('point mut')) return 'Point Mutation';
+            // "Advat", "Advat Focus", "Advat Focus Cardiac", "Advat Focussed
+            // ..." etc. are all the same underlying Advat test with a
+            // trailing qualifier, not separate/combined tests - group them
+            // all under one "Advat" filter option (the table cell itself
+            // still shows the full original value).
+            if (normalized.startsWith('advat')) return 'Advat';
             return raw;
         }
 
