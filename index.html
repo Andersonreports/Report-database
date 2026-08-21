@@ -2179,6 +2179,9 @@
                 // down was silently relabeling them as the wrong test type.
                 'wes': 'WES',
                 'ces': 'CES',
+                // "CES" is shorthand for "Clinical Exome Sequencing" - same
+                // test, merge onto the far more common abbreviated form.
+                'clinical exome sequencing': 'CES',
                 'pcr': 'PCR',
                 'rt pcr': 'RT-PCR',
                 'rtpcr': 'RT-PCR',
@@ -2188,7 +2191,10 @@
                 'covid-19 pcr': 'COVID PCR',
                 'covid': 'COVID',
                 'ngs': 'NGS',
-                'wgs': 'WGS',
+                // "WGS" is shorthand for "Whole Genome Sequencing" - same
+                // test, and the spelled-out form is the far more common
+                // spelling in the sheet, so merge onto that.
+                'wgs': 'Whole Genome Sequencing',
                 'exome': 'Exome',
                 'ngs panel': 'NGS Panel',
                 'genotyping': 'Genotyping',
