@@ -686,6 +686,12 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        .table-info-count {
+            font-weight: 700;
+            color: var(--accent-primary);
+            font-size: 14px;
+        }
+
         .table-wrapper {
             overflow-x: auto;
             max-height: 65vh;
@@ -815,6 +821,26 @@
             display: flex;
             gap: 8px;
             white-space: nowrap;
+            position: sticky;
+            right: 0;
+            z-index: 5;
+            background: var(--bg-card);
+            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.15);
+        }
+
+        tbody tr:hover .cell-actions {
+            background: var(--bg-tertiary);
+        }
+
+        /* Keeps Actions reachable without a long horizontal drag on wide,
+           dynamically-columned tables - pinned to the right edge on both
+           axes, above the sticky header's own top-pin. */
+        thead th[data-col="actions"] {
+            position: sticky;
+            right: 0;
+            z-index: 11;
+            background: var(--bg-tertiary);
+            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.15);
         }
 
         .btn-view,
@@ -1486,7 +1512,7 @@
                         Export CSV
                     </button>
                     <div class="table-info">
-                        <span id="showingCount">0</span> of <span id="totalCount">0</span>
+                        <span class="table-info-count" id="showingCount">0</span> of <span class="table-info-count" id="totalCount">0</span>
                     </div>
                 </div>
             </div>
@@ -1622,19 +1648,32 @@
             activeSource: 0
         };
 
-        const FILTER_COLUMNS = [
-            { key: 'run', label: 'Run' },
-            { key: 'test', label: 'Test' },
-            { key: 'single_couple', label: 'Single/Couple' },
-            { key: 'category', label: 'Category' },
-            { key: 'panel', label: 'Panel' },
-            { key: 'sample_type', label: 'Sample Type' },
-            { key: 'status', label: 'Status' },
-            { key: 'snv_status', label: 'SNV Status' },
-            { key: 'report_status', label: 'Report Status' },
-            { key: 'sheet', label: 'Year' },
-            { key: 'source', label: 'Data Source' }
-        ];
+        // Backend key -> canonical display label, for every key whose label
+        // isn't just its prettified key (an abbreviation, a renamed field,
+        // etc). This is the single source of truth for column labels - the
+        // table header, the Advanced Filters labels, and the CSV export
+        // headers all resolve through getColumnLabel() below, so a label
+        // only ever needs to change in one place.
+        const COLUMN_LABELS = {
+            no: 'No', sample_name: 'Sample Name', gen_id: 'Gen ID', anderson_id: 'Anderson ID',
+            test: 'Test', single_couple: 'Single/Couple', category: 'Category', panel: 'Panel',
+            sample_type: 'Sample Type', remarks: 'Remarks', status: 'Status', snv_status: 'SNV Status',
+            report_release_date: 'Report Release Date', run: 'Run',
+            sheet: 'Year', source: 'Data Source', report_status: 'Report Status'
+        };
+
+        function prettifyColumnKey(key) {
+            const UPPERCASE_WORDS = new Set(['vus', 'snv', 'cnv', 'poc', 'af']);
+            return key.split('_').map(w => (UPPERCASE_WORDS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+        }
+
+        function getColumnLabel(key) {
+            return COLUMN_LABELS[key] || prettifyColumnKey(key);
+        }
+
+        const FILTER_COLUMNS = ['run', 'test', 'single_couple', 'category', 'panel', 'sample_type',
+            'status', 'snv_status', 'report_status', 'sheet', 'source'
+        ].map(key => ({ key, label: getColumnLabel(key) }));
 
         // Fields that exist on every row for internal bookkeeping/filtering
         // (not a real sheet column) - never turned into their own table
@@ -1658,18 +1697,6 @@
         // Bookkeeping keys the backend adds that were never a real sheet
         // column - skipped entirely when reading off the sheet's real order.
         const RAW_KEY_EXCLUDE_FROM_ORDER = new Set(['_run', '_sheet', '_report_link', '_source', 'report_link', 'rawdata']);
-
-        const COLUMN_LABEL_OVERRIDES = {
-            no: 'No', sample_name: 'Sample Name', gen_id: 'Gen ID', anderson_id: 'Anderson ID',
-            test: 'Test', single_couple: 'Single/Couple', category: 'Category', panel: 'Panel',
-            sample_type: 'Sample Type', remarks: 'Remarks', status: 'Status', snv_status: 'SNV Status',
-            report_release_date: 'Report Release Date', run: 'Run'
-        };
-
-        function prettifyColumnKey(key) {
-            const UPPERCASE_WORDS = new Set(['vus', 'snv', 'cnv', 'poc', 'af']);
-            return key.split('_').map(w => (UPPERCASE_WORDS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
-        }
 
         let TABLE_COLUMNS = [
             { key: 'no', label: 'No', sortable: true },
@@ -1738,7 +1765,7 @@
 
             TABLE_COLUMNS = [...realColumnKeys, 'run'].map(key => ({
                 key,
-                label: COLUMN_LABEL_OVERRIDES[key] || prettifyColumnKey(key),
+                label: getColumnLabel(key),
                 sortable: key !== 'remarks'
             })).concat({ key: 'actions', label: 'Actions', sortable: false });
 
@@ -2523,7 +2550,7 @@
 
             return `
                 <div class="filter-group" id="filterGroup-${col.key}">
-                    <label>${col.label} <span class="count">${values.length}</span></label>
+                    <label>${col.label}</label>
                     <div class="multi-select" data-key="${col.key}">
                         <button class="multi-select-trigger" onclick="toggleDropdown('${col.key}')">
                             <span class="trigger-text">${filters[col.key].size > 0 ? `<span class="selected-count">${filters[col.key].size}</span> selected` : `<span class="placeholder">All</span>`}</span>
@@ -2859,9 +2886,15 @@
 
         // EXPORT
         function exportData() {
-            const headers = ['No', 'Sample Name', 'Gen ID', 'Anderson ID', 'Test', 'Single/Couple', 'Category', 'Sample Type', 'Remarks', 'Run', 'Report Link'];
-            const rows = filteredData.map(r => [r.no, r.sample_name, r.gen_id, r.anderson_id, r.test, r.single_couple, r.category, r.sample_type, r.remarks, r.run, r.report_link]);
-            const csv = [headers, ...rows].map(r => r.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+            // Mirror whatever's actually visible in the table (so the export
+            // never drifts from it), swapping the View/PDF "Actions" column
+            // for the raw Report Link, which is a real, useful CSV value.
+            const columns = [...getVisibleTableColumns().filter(c => c.key !== 'actions'),
+                { key: 'report_link', label: getColumnLabel('report_link') }
+            ];
+            const headers = columns.map(c => c.label);
+            const rows = filteredData.map(r => columns.map(c => r[c.key]));
+            const csv = [headers, ...rows].map(r => r.map(c => `"${(c || '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
