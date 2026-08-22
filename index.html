@@ -803,6 +803,14 @@
             color: var(--text-secondary);
         }
 
+        .cell-generic {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help;
+        }
+
         .remarks-cell {
             max-width: 200px;
             overflow: hidden;
@@ -2843,7 +2851,10 @@
                 // Any other column (Status, SNV Status, Report Release Date, or a
                 // dynamically-discovered field like an SNV/CNV sub-column, raw
                 // data location, etc.) just renders its raw value generically.
-                default: return `<td>${esc(r[col.key]) || '-'}</td>`;
+                // Capped + truncated (full value on hover) so one long outlier
+                // value (e.g. a long raw-data file path) can't blow up the
+                // column's width and shove every later column far to the right.
+                default: return `<td class="cell-generic" title="${esc(r[col.key])}">${esc(r[col.key]) || '-'}</td>`;
             }
         }
 
