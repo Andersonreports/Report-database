@@ -17,6 +17,7 @@
             --bg-tertiary: #f1f5f9;
             --bg-card: #ffffff;
             --accent-primary: #2563eb;
+            --accent-primary-hover: #1d4ed8;
             --accent-secondary: #7c3aed;
             --accent-success: #059669;
             --accent-warning: #d97706;
@@ -43,6 +44,22 @@
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .topbar-inner {
+            max-width: 1700px;
+            margin: 0 auto;
+            padding: 14px 24px;
         }
 
         .container {
@@ -57,7 +74,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
             flex-wrap: wrap;
             gap: 16px;
         }
@@ -65,32 +81,34 @@
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .logo-icon {
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             background: var(--gradient-1);
-            border-radius: 14px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
-            box-shadow: var(--shadow-md);
+            letter-spacing: 0.5px;
         }
 
         .logo-text h1 {
-            font-size: 26px;
+            font-size: 17px;
             font-weight: 700;
             color: var(--text-primary);
+            letter-spacing: -0.2px;
         }
 
         .logo-text p {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-muted);
+            margin-top: 1px;
         }
 
         .header-actions {
@@ -104,13 +122,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 16px;
-            background: var(--bg-secondary);
-            border-radius: 10px;
+            padding: 9px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
             font-size: 13px;
+            font-weight: 500;
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
         }
 
         .sync-dot {
@@ -143,35 +161,36 @@
         }
 
         .btn-icon {
-            background: var(--bg-secondary);
+            background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            padding: 10px 14px;
-            border-radius: 10px;
+            padding: 9px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 13px;
+            font-weight: 500;
             font-family: 'DM Sans', sans-serif;
-            box-shadow: var(--shadow-sm);
         }
 
         .btn-icon:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             border-color: var(--accent-primary);
             color: var(--accent-primary);
         }
 
         .btn-upload {
-            background: var(--gradient-1);
-            border: none;
+            background: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
             color: white;
+            box-shadow: none;
         }
 
         .btn-upload:hover {
-            opacity: 0.9;
+            background: var(--accent-primary-hover);
             color: white;
         }
 
@@ -185,17 +204,11 @@
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 18px 20px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
         }
 
         .stat-card::before {
@@ -208,23 +221,17 @@
         }
 
         .stat-card.total::before {
-            background: var(--gradient-1);
+            background: var(--accent-primary);
         }
 
-        .stat-card.runs::before {
-            background: var(--accent-secondary);
-        }
-
-        .stat-card.tests::before {
-            background: var(--accent-success);
+        .stat-card.runs::before,
+        .stat-card.tests::before,
+        .stat-card.filtered::before {
+            background: var(--border-color);
         }
 
         .stat-card.released::before {
-            background: var(--accent-warning);
-        }
-
-        .stat-card.filtered::before {
-            background: #ec4899;
+            background: var(--accent-success);
         }
 
         .stat-label {
@@ -236,9 +243,10 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
         }
 
         .stat-sub {
@@ -251,20 +259,8 @@
             color: var(--accent-primary);
         }
 
-        .stat-card.runs .stat-value {
-            color: var(--accent-secondary);
-        }
-
-        .stat-card.tests .stat-value {
-            color: var(--accent-success);
-        }
-
         .stat-card.released .stat-value {
-            color: var(--accent-warning);
-        }
-
-        .stat-card.filtered .stat-value {
-            color: #ec4899;
+            color: var(--accent-success);
         }
 
         .sheet-tabs {
@@ -325,7 +321,7 @@
         .filters-section {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             box-shadow: var(--shadow-sm);
@@ -641,7 +637,7 @@
         .table-section {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
         }
@@ -1065,13 +1061,13 @@
         }
 
         .btn-primary {
-            background: var(--gradient-1);
-            border: none;
+            background: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
             color: white;
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            background: var(--accent-primary-hover);
         }
 
         .btn-secondary {
@@ -1364,6 +1360,10 @@
                 padding: 16px;
             }
 
+            .topbar-inner {
+                padding: 12px 16px;
+            }
+
             .header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -1407,44 +1407,48 @@
 </head>
 
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo-section">
-                <div class="logo-icon">AR</div>
-                <div class="logo-text">
-                    <h1>Advat Report Database</h1>
-                    <p>SURFseq Analysis Reports</p>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <header class="header">
+                <div class="logo-section">
+                    <div class="logo-icon">AR</div>
+                    <div class="logo-text">
+                        <h1>Advat Report Database</h1>
+                        <p>SURFseq Analysis Reports</p>
+                    </div>
                 </div>
-            </div>
-            <div class="header-actions">
-                <div class="sync-status">
-                    <span class="sync-dot" id="syncDot"></span>
-                    <span id="syncText">Ready</span>
+                <div class="header-actions">
+                    <div class="sync-status">
+                        <span class="sync-dot" id="syncDot"></span>
+                        <span id="syncText">Ready</span>
+                    </div>
+                    <button class="btn-icon btn-upload" onclick="openUpload()" title="Upload Local File">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                        </svg>
+                        Upload
+                    </button>
+                    <button class="btn-icon" onclick="loadData()" title="Refresh">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                        </svg>
+                        Refresh
+                    </button>
+                    <button class="btn-icon" onclick="openConfig()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                        </svg>
+                        Settings
+                    </button>
                 </div>
-                <button class="btn-icon btn-upload" onclick="openUpload()" title="Upload Local File">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg>
-                    Upload
-                </button>
-                <button class="btn-icon" onclick="loadData()" title="Refresh">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                    </svg>
-                    Refresh
-                </button>
-                <button class="btn-icon" onclick="openConfig()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3" />
-                        <path
-                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-                    </svg>
-                    Settings
-                </button>
-            </div>
-        </header>
+            </header>
+        </div>
+    </div>
 
+    <div class="container">
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-label">Total Samples</div>
